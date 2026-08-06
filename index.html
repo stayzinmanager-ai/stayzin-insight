@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>stayZIN Insight v1.0 - Incident & Complaint Report</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen text-gray-800">
+    <div class="max-w-5xl mx-auto p-4 md:p-8 space-y-6">
+        
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row md:items-center justify-between bg-white p-6 rounded-xl shadow-md gap-4 border">
+            <div class="flex items-center gap-4">
+                <img src="logo-zin.png" alt="ZIN Logo" class="h-12 w-auto object-contain" onerror="this.style.display='none'">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">stayZIN Insight <span class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">v1.0 Final</span></h1>
+                    <p class="text-sm text-gray-500">Multi-Department Complaint Analysis & Incident Report System</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Form Input Komplain -->
+        <section class="bg-white p-6 rounded-xl shadow-md border space-y-4">
+            <h2 class="text-lg font-semibold text-gray-700">Input Guest Complaint / Incident Detail</h2>
+            <div class="space-y-3">
+                <textarea id="complaintInput" rows="4" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Masukkan detail komplain tamu... (Contoh: AC kamar 102 panas dan seprai kotor)"></textarea>
+                <div class="flex gap-2 justify-end">
+                    <button id="clearBtn" class="px-4 py-2 text-sm bg-gray-200 hover:bg-gray-300 rounded-lg transition">Clear</button>
+                    <button id="analyzeBtn" class="px-6 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition flex items-center gap-2">
+                        <span>Analyze Complaint</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Indikator Loading AI -->
+        <div id="loading" class="hidden flex-col items-center justify-center p-8 bg-white rounded-xl shadow border space-y-3">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <p class="text-sm text-gray-600 font-medium">AI sedang memproses dan mengelompokkan departemen terkait...</p>
+        </div>
+
+        <!-- Hasil Analisis AI -->
+        <section id="resultSection" class="hidden bg-white p-6 rounded-xl shadow-md border space-y-4">
+            <h2 class="text-lg font-semibold text-gray-700 border-b pb-2">AI Analysis Result</h2>
+            <div id="resultContent" class="space-y-3 text-sm">
+                <!-- Data hasil AI di-render di sini -->
+            </div>
+        </section>
+
+        <!-- Histori Komplain -->
+        <section class="bg-white p-6 rounded-xl shadow-md border space-y-4">
+            <div class="flex justify-between items-center">
+                <h2 class="text-lg font-semibold text-gray-700">Complaint History Log</h2>
+                <button id="clearHistoryBtn" class="text-xs text-red-500 hover:underline">Hapus Semua Histori</button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="bg-gray-50 border-b text-gray-600">
+                            <th class="p-3">Tanggal</th>
+                            <th class="p-3">Komplain Original</th>
+                            <th class="p-3">Department</th>
+                            <th class="p-3">Rekomendasi Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTable" class="divide-y">
+                        <!-- Histori di-render di sini -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <script src="storage.js"></script>
+    <script src="ai.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
