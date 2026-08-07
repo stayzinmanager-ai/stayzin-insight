@@ -3,37 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>stayZIN Insight v2.0 - AI Guest Experience Intelligence</title>
+    <title>stayZIN Insight v2.1 - Multi-Unit Guest Complaint Intelligence</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- html2pdf & SheetJS (XLSX) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- SheetJS (XLSX) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 p-4 md:p-8">
     <div id="exportableArea" class="max-w-7xl mx-auto space-y-6">
         
-        <!-- HEADER & EXPORT -->
+        <!-- HEADER & UNIT FILTER -->
         <header class="flex flex-col md:flex-row md:items-center justify-between bg-white p-6 rounded-xl shadow-sm border border-slate-200 gap-4">
-            <div class="flex items-center gap-4">
-                <div>
-                    <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
-                        stayZIN Insight 
-                        <span class="text-xs font-semibold bg-blue-100 text-blue-700 px-2.5 py-0.5 rounded-full">v2.0 Executive</span>
-                    </h1>
-                    <p class="text-xs text-slate-500">AI-Powered Guest Experience & Complaint Intelligence Platform</p>
-                </div>
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                    stayZIN Insight 
+                    <span class="text-xs font-semibold bg-blue-100 text-blue-700 px-2.5 py-0.5 rounded-full">v2.1 Multi-Unit</span>
+                </h1>
+                <p class="text-xs text-slate-500">AI Complaint & Guest Experience Platform (Canggu & Berawa)</p>
             </div>
             
-            <div class="flex items-center gap-2" data-html2canvas-ignore="true">
-                <button onclick="exportExcel()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition">
-                    📊 Export Excel
-                </button>
-                <button onclick="exportPDF()" class="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold transition">
-                    📄 Export PDF Report
-                </button>
+            <div class="flex items-center gap-3">
+                <label class="text-xs font-bold text-slate-700">Filter Location Unit:</label>
+                <select id="unitSelectFilter" onchange="renderDashboard()" class="p-2 border rounded-lg text-xs font-semibold bg-slate-50 border-blue-500 text-blue-900 focus:ring-2 focus:ring-blue-500">
+                    <option value="ALL">🌐 Semua Unit (Canggu & Berawa)</option>
+                    <option value="Canggu">🌴 Unit Canggu</option>
+                    <option value="Berawa">🌊 Unit Berawa</option>
+                </select>
             </div>
         </header>
 
@@ -48,8 +45,8 @@
                 <p id="kpiHighPriority" class="text-2xl font-black text-rose-600">0</p>
             </div>
             <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-1">
-                <p class="text-[11px] font-semibold text-slate-500 uppercase">Avg Resolution Time</p>
-                <p id="kpiAvgResolution" class="text-2xl font-black text-blue-600">1.8 hrs</p>
+                <p class="text-[11px] font-semibold text-slate-500 uppercase">Top Source</p>
+                <p id="kpiTopSource" class="text-base font-bold text-blue-600 truncate">-</p>
             </div>
             <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-1">
                 <p class="text-[11px] font-semibold text-slate-500 uppercase">⭐ Review Risk</p>
@@ -65,131 +62,52 @@
             </div>
         </section>
 
-        <!-- 📂 UPLOAD EXCEL FILE SECTION -->
+        <!-- 📂 UPLOAD EXCEL SECTION (FORMAT LOG RESORT) -->
         <section class="bg-blue-50 border border-blue-200 p-4 rounded-xl space-y-2" data-html2canvas-ignore="true">
             <div class="flex justify-between items-center flex-wrap gap-2">
                 <h3 class="text-sm font-bold text-blue-900 flex items-center gap-2">
-                    📂 Import Massal Data Komplain dari Excel (.xlsx / .csv)
+                    📂 Import Log Komplain Excel / CSV
                 </h3>
-                <span class="text-xs text-blue-700 font-medium">Format Kolom: Tanggal | Kamar | Tamu | Komplain</span>
+                <span class="text-xs text-blue-700 font-medium">Format Kolom Terdeteksi: Guest Name | Room No | Check-In | Check-Out | Source | Remarks | Unit</span>
             </div>
             <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer"/>
-        </section>
-
-        <!-- ✨ AI COMPLAINT ANALYZER (INPUT MANUAL) -->
-        <section class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4" data-html2canvas-ignore="true">
-            <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                ✨ AI Complaint Analyzer & Machine Learning Engine
-            </h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <input type="text" id="guestNameInput" placeholder="Nama Tamu (e.g. John Doe)" class="p-2.5 border rounded-lg text-sm bg-slate-50">
-                <input type="text" id="roomInput" placeholder="No. Kamar (e.g. 201)" class="p-2.5 border rounded-lg text-sm bg-slate-50">
-                <select id="impactInput" class="p-2.5 border rounded-lg text-sm bg-slate-50">
-                    <option value="Low">Dampak Tamu: Low (Minor issue)</option>
-                    <option value="Medium" selected>Dampak Tamu: Medium (Guest upset / requested fix)</option>
-                    <option value="High">Dampak Tamu: High (Demanded room change / refund)</option>
-                </select>
-            </div>
-
-            <textarea id="complaintInput" rows="3" class="w-full p-3 border rounded-lg text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500" placeholder="Deskripsikan komplain... (Contoh: Kamar 201 berbau apek / musty smell, AC tidak dingin dan kamar mandi kotor)"></textarea>
-
-            <div class="flex justify-end gap-2">
-                <button id="clearBtn" class="px-4 py-2 text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-lg transition">Clear</button>
-                <button id="analyzeBtn" class="px-6 py-2 text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-sm transition flex items-center gap-1.5">
-                    ✨ Analyze & Classify AI
-                </button>
-            </div>
-        </section>
-
-        <!-- LOADING INDICATOR -->
-        <div id="loading" class="hidden flex-col items-center justify-center p-8 bg-white rounded-xl border border-slate-200 space-y-2">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <p class="text-xs font-semibold text-slate-600">AI Machine Learning sedang menganalisis Root Cause & Review Risk...</p>
-        </div>
-
-        <!-- AI RESULT OUTPUT CARD -->
-        <section id="resultSection" class="hidden bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-            <div class="border-b pb-3 flex justify-between items-center">
-                <h3 class="text-base font-bold text-slate-800">🤖 AI Diagnostic & Result</h3>
-                <span id="resPriorityBadge" class="text-xs px-3 py-1 rounded-full font-bold">Priority</span>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
-                <div class="p-3 bg-slate-50 rounded-lg border space-y-2">
-                    <p class="font-bold text-slate-700 border-b pb-1">KLASIFIKASI AI</p>
-                    <p><b>Dept:</b> <span id="resDept">-</span></p>
-                    <p><b>Category:</b> <span id="resCategory">-</span></p>
-                    <p><b>Sub Category:</b> <span id="resSubCategory">-</span></p>
-                    <p><b>Sentiment:</b> <span id="resSentiment">-</span></p>
-                </div>
-
-                <div class="p-3 bg-slate-50 rounded-lg border space-y-2">
-                    <p class="font-bold text-slate-700 border-b pb-1">METRIK AI</p>
-                    <p><b>Severity Score:</b> <span id="resSeverityScore" class="font-bold text-rose-600">-</span></p>
-                    <p><b>Review Risk:</b> <span id="resReviewRiskPct" class="font-bold text-amber-600">-</span></p>
-                    <p><b>Predicted Star:</b> <span id="resPredictedStar">-</span></p>
-                    <p><b>Est. Revenue at Risk:</b> <span id="resRevenueAtRisk" class="font-bold text-rose-600">-</span></p>
-                </div>
-
-                <div class="p-3 bg-slate-50 rounded-lg border space-y-2 md:col-span-2">
-                    <p class="font-bold text-slate-700 border-b pb-1">ROOT CAUSE & RECOVERY RECOMMENDATION</p>
-                    <p><b>🔍 Root Cause:</b> <span id="resRootCause" class="text-slate-700 font-medium">-</span></p>
-                    <p><b>🤖 AI Summary:</b> <span id="resSummary" class="text-slate-600 italic">-</span></p>
-                    <div class="pt-2">
-                        <p class="font-bold text-slate-700">Recommended Actions:</p>
-                        <div id="resRecoveryChecklist" class="mt-1 space-y-1"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="flex justify-end">
-                <button id="saveCaseBtn" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs transition">
-                    📋 Save Case & Update Dashboard
-                </button>
-            </div>
         </section>
 
         <!-- 🔥 ROOM HEAT MAP & ANALYTICS -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
                 <h3 class="text-sm font-bold text-slate-800 flex items-center justify-between">
-                    <span>🔥 Complaint Heat Map per Room</span>
-                    <span class="text-[10px] font-normal text-slate-500">Live Frequency</span>
+                    <span>🔥 Room Complaint Frequency</span>
+                    <span id="unitMapBadge" class="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded">All Units</span>
                 </h3>
                 <div id="roomHeatMap" class="grid grid-cols-4 gap-2 pt-2"></div>
             </div>
 
             <div class="lg:col-span-2 bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
-                <h3 class="text-sm font-bold text-slate-800">📊 Department Performance & Priority Breakdown</h3>
+                <h3 class="text-sm font-bold text-slate-800">📊 Department & Complaint Source Breakdown</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 h-60">
                     <div><canvas id="deptChart"></canvas></div>
-                    <div><canvas id="priorityChart"></canvas></div>
+                    <div><canvas id="sourceChart"></canvas></div>
                 </div>
             </div>
         </div>
 
-        <!-- 📚 COMPLAINT HISTORY TABLE -->
+        <!-- 📚 COMPLAINT HISTORY TABLE (EXACT MATCH USER FORMAT) -->
         <section class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-3" data-html2canvas-ignore="true">
                 <div class="flex items-center gap-2">
-                    <h3 class="text-base font-bold text-slate-800">📚 Complaint History & Logs</h3>
+                    <h3 class="text-base font-bold text-slate-800">📚 Guest Complaint Log</h3>
                     <button onclick="clearAllData()" class="text-[10px] bg-rose-50 hover:bg-rose-100 text-rose-600 px-2 py-1 rounded border border-rose-200 font-semibold">Reset Data</button>
                 </div>
                 
                 <div class="flex flex-wrap items-center gap-2">
-                    <input type="text" id="searchInput" placeholder="Cari Tamu/Kamar/Keyword..." onkeyup="filterHistoryTable()" class="p-2 border rounded-lg text-xs bg-slate-50">
+                    <input type="text" id="searchInput" placeholder="Cari Tamu/Kamar/Remarks..." onkeyup="filterHistoryTable()" class="p-2 border rounded-lg text-xs bg-slate-50">
                     <select id="deptFilter" onchange="filterHistoryTable()" class="p-2 border rounded-lg text-xs bg-slate-50">
-                        <option value="">Semua Dept</option>
+                        <option value="">Semua Dept (AI)</option>
                         <option value="Housekeeping">Housekeeping</option>
                         <option value="Engineering">Engineering</option>
                         <option value="Front Office">Front Office</option>
-                    </select>
-                    <select id="priorityFilter" onchange="filterHistoryTable()" class="p-2 border rounded-lg text-xs bg-slate-50">
-                        <option value="">Semua Priority</option>
-                        <option value="Critical">Critical</option>
-                        <option value="High">High</option>
-                        <option value="Medium">Medium</option>
-                        <option value="Low">Low</option>
+                        <option value="External / Environment">External / Environment</option>
                     </select>
                 </div>
             </div>
@@ -198,13 +116,15 @@
                 <table class="w-full text-left border-collapse text-xs">
                     <thead>
                         <tr class="bg-slate-100 text-slate-700 border-b">
-                            <th class="p-3">Tanggal / Room</th>
-                            <th class="p-3">Tamu</th>
-                            <th class="p-3">Category / Root Cause</th>
-                            <th class="p-3">Dept</th>
-                            <th class="p-3">Priority</th>
-                            <th class="p-3">Review Risk</th>
-                            <th class="p-3">Recovery Plan</th>
+                            <th class="p-2.5">Guest Name</th>
+                            <th class="p-2.5">Room No</th>
+                            <th class="p-2.5">Check-In</th>
+                            <th class="p-2.5">Check-Out</th>
+                            <th class="p-2.5">Source</th>
+                            <th class="p-2.5">Remarks (Complaint)</th>
+                            <th class="p-2.5">Unit</th>
+                            <th class="p-2.5 border-l bg-slate-200 text-slate-800">AI Dept</th>
+                            <th class="p-2.5 bg-slate-200 text-slate-800">AI Root Cause</th>
                         </tr>
                     </thead>
                     <tbody id="historyTable" class="divide-y divide-slate-200"></tbody>
@@ -214,106 +134,57 @@
 
     </div>
 
-    <!-- SCRIPT APPLICATION & AI LOGIC INLINED -->
+    <!-- SCRIPT LOGIC -->
     <script>
-        // --- 1. LOCAL STORAGE MANAGER ---
-        const STORAGE_KEY = 'stayzin_complaints_db';
+        const STORAGE_KEY = 'stayzin_complaints_v2_1';
         const StorageManager = {
             getComplaints: () => JSON.parse(localStorage.getItem(STORAGE_KEY)) || [],
-            saveComplaint: (data) => {
-                const current = StorageManager.getComplaints();
-                current.unshift(data);
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(current));
-            },
-            clearAll: () => {
-                localStorage.removeItem(STORAGE_KEY);
-            }
+            saveAll: (dataArray) => localStorage.setItem(STORAGE_KEY, JSON.stringify(dataArray)),
+            clearAll: () => localStorage.removeItem(STORAGE_KEY)
         };
 
-        // --- 2. AI ENGINE & CLASSIFICATION ---
-        function analyzeComplaintAI(text, room, impact, guestName) {
-            const lower = text.toLowerCase();
-            
-            let dept = "Management";
-            let category = "General Service";
-            let subCategory = "Operational Issue";
-            let rootCause = "Unspecified Operational Failure";
+        // ENGINE KLASIFIKASI AI
+        function analyzeComplaintAI(text) {
+            const lower = (text || '').toLowerCase();
+            let dept = "General / Mgmt";
+            let rootCause = "Service Quality Issue";
             let priority = "Medium";
-            let severityScore = 50;
-            let reviewRiskPct = 50;
-            let predictedStar = "⭐⭐⭐ (3/5)";
-            let sentiment = "Negative";
-            let revenueAtRisk = 500000;
+            let revenueRisk = 500000;
 
-            let recoveryChecklist = ["Apology Letter from Management"];
-
-            if (lower.includes("musty") || lower.includes("bau") || lower.includes("apek") || lower.includes("kotor") || lower.includes("humidity") || lower.includes("lembap") || lower.includes("mold") || lower.includes("jamur") || lower.includes("sprei") || lower.includes("serangga")) {
-                dept = "Housekeeping";
-                category = "Humidity / Cleanliness";
-                if (lower.includes("bau") || lower.includes("musty") || lower.includes("apek") || lower.includes("lembap")) {
-                    subCategory = "Musty Smell / Moldy Room";
-                    rootCause = "High Room Humidity & Lack of Ventilation / Dehumidifier";
-                    recoveryChecklist.push("Deep Cleaning & Air Purifier", "Room Move Offer", "Fruit Basket");
-                } else {
-                    subCategory = "Linen / Sanitation";
-                    rootCause = "Inadequate Housekeeping Inspection SOP";
-                    recoveryChecklist.push("Re-clean Room & Replace Linen", "Late Check-out Offer");
-                }
-                severityScore += 25;
+            if (lower.includes("noise") || lower.includes("bising") || lower.includes("construction") || lower.includes("beach club") || lower.includes("busy") || lower.includes("river") || lower.includes("flies")) {
+                dept = "External / Environment";
+                if (lower.includes("beach club")) rootCause = "Beach Club Music Noise Pollution";
+                else if (lower.includes("construction")) rootCause = "Nearby Building Construction Noise";
+                else if (lower.includes("flies") || lower.includes("river")) rootCause = "Outdoor Insects / River Pest Issue";
+                else rootCause = "Surrounding Environment Traffic / Noise";
+                priority = "Medium";
+                revenueRisk = 750000;
             } 
-            else if (lower.includes("ac") || lower.includes("dingin") || lower.includes("panas") || lower.includes("bocor") || lower.includes("air") || lower.includes("mati") || lower.includes("tv") || lower.includes("bising") || lower.includes("wifi")) {
+            else if (lower.includes("bathroom") || lower.includes("shower") || lower.includes("wifi") || lower.includes("ac") || lower.includes("door") || lower.includes("blinds")) {
                 dept = "Engineering";
-                category = "Facilities & AC";
-                subCategory = lower.includes("ac") ? "AC Malfunction / Water Leakage" : "Hardware / Network Failure";
-                rootCause = "Preventive Maintenance Schedule Lapse";
-                recoveryChecklist.push("Immediate Engineering Fix", "Drink Voucher at Bar", "Room Upgrade");
-                severityScore += 30;
-            }
-            else if (lower.includes("check in") || lower.includes("lama") || lower.includes("staf") || lower.includes("ramah") || lower.includes("antri") || lower.includes("sopan")) {
-                dept = "Front Office";
-                category = "Service Speed & Courtesy";
-                subCategory = "Check-in Delay / Staff Attitude";
-                rootCause = "Peak Hour Staffing Shortage / Communication Gap";
-                recoveryChecklist.push("Duty Manager Apology", "Welcome Drink / Discount Voucher");
-                severityScore += 20;
-            }
-
-            if (impact === "High") {
-                severityScore += 20;
-                priority = "Critical";
-                reviewRiskPct = 90;
-                predictedStar = "⭐ (1/5)";
-                revenueAtRisk = 2500000;
-                recoveryChecklist.push("Full Room Upgrade", "Complimentary Dinner / Discount");
-            } else if (impact === "Medium") {
-                severityScore += 10;
+                if (lower.includes("wifi")) rootCause = "Wi-Fi Access Point Malfunction";
+                else if (lower.includes("shower") || lower.includes("bathroom")) rootCause = "Bathroom Water Pressure / Fitting Issue";
+                else rootCause = "Room Hardware / Fixture Defect";
                 priority = "High";
-                reviewRiskPct = 65;
-                predictedStar = "⭐⭐⭐ (3/5)";
-                revenueAtRisk = 1200000;
-            } else {
+                revenueRisk = 1000000;
+            }
+            else if (lower.includes("pillow") || lower.includes("clean") || lower.includes("smell") || lower.includes("linen")) {
+                dept = "Housekeeping";
+                rootCause = "Room Setup / Housekeeping Amenity Standard";
                 priority = "Low";
-                reviewRiskPct = 25;
-                predictedStar = "⭐⭐⭐⭐ (4/5)";
-                revenueAtRisk = 300000;
+                revenueRisk = 400000;
             }
 
-            severityScore = Math.min(Math.max(severityScore, 10), 99);
-            const summary = `Komplain terkait ${category} (${subCategory}) di Kamar ${room}. Terindikasi disebabkan oleh ${rootCause}. Risiko ulasan negatif mencapai ${reviewRiskPct}%.`;
-
-            return { dept, category, subCategory, rootCause, priority, severityScore, reviewRiskPct, predictedStar, sentiment, revenueAtRisk, recoveryChecklist, summary };
+            return { dept, rootCause, priority, revenueRisk };
         }
 
-        // --- 3. CONTROLLER & DASHBOARD RENDERER ---
-        let currentPendingResult = null;
         let deptChartInstance = null;
-        let priorityChartInstance = null;
-        const ROOM_LIST = ["101", "102", "103", "104", "201", "202", "203", "204", "301", "302", "303", "304"];
+        let sourceChartInstance = null;
 
         document.addEventListener("DOMContentLoaded", () => {
             renderDashboard();
 
-            // EXCEL IMPORT HANDLER
+            // EXCEL FILE READER
             document.getElementById('excelFileInput').addEventListener('change', function(e) {
                 const file = e.target.files[0];
                 if (!file) return;
@@ -325,133 +196,77 @@
                     const firstSheetName = workbook.SheetNames[0];
                     const rawJson = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheetName]);
 
-                    let importedCount = 0;
-                    rawJson.forEach(row => {
-                        const room = row['Kamar'] || row['Room'] || row['No Kamar'] || '101';
-                        const guestName = row['Tamu'] || row['Guest'] || row['Nama Tamu'] || 'Guest';
-                        const text = row['Komplain'] || row['Complaint'] || row['Detail'] || '';
-                        const date = row['Tanggal'] || row['Date'] || new Date().toLocaleDateString("id-ID");
-                        const impact = row['Dampak'] || row['Impact'] || 'Medium';
+                    const existingData = StorageManager.getComplaints();
 
-                        if (text) {
-                            const aiResult = analyzeComplaintAI(text, room.toString(), impact, guestName.toString());
-                            const record = {
+                    rawJson.forEach(row => {
+                        // Fleksibel pencocokan header kolom gambar user
+                        const guestName = row['Guest Name'] || row['Guest'] || row['Nama Tamu'] || '-';
+                        const room = row['Room No'] || row['Room'] || row['Kamar'] || '-';
+                        const checkIn = row['Check-In'] || row['Checkin'] || '-';
+                        const checkOut = row['Check-Out'] || row['Checkout'] || '-';
+                        const source = row['Source'] || row['Sumber'] || 'Direct';
+                        const remarks = row['Remarks'] || row['Complaint'] || row['Komplain'] || '';
+                        const unit = row['Unit'] || 'Canggu';
+
+                        if (remarks) {
+                            const ai = analyzeComplaintAI(remarks);
+                            existingData.unshift({
                                 id: Date.now() + Math.random(),
-                                date: date.toString(),
-                                rawDate: new Date().toISOString().split("T")[0],
-                                room: room.toString(),
                                 guestName: guestName.toString(),
-                                text: text.toString(),
-                                impact,
-                                ...aiResult
-                            };
-                            StorageManager.saveComplaint(record);
-                            importedCount++;
+                                room: room.toString(),
+                                checkIn: checkIn.toString(),
+                                checkOut: checkOut.toString(),
+                                source: source.toString(),
+                                remarks: remarks.toString(),
+                                unit: unit.toString(),
+                                ...ai
+                            });
                         }
                     });
 
+                    StorageManager.saveAll(existingData);
                     renderDashboard();
-                    alert(`Berhasil mengimpor & mengklasifikasikan ${importedCount} komplain dari file Excel!`);
+                    alert("Berhasil mengimpor & mengklasifikasikan data Excel!");
                     document.getElementById('excelFileInput').value = '';
                 };
                 reader.readAsArrayBuffer(file);
             });
-
-            // ANALYZE BUTTON MANUAL
-            document.getElementById("analyzeBtn").addEventListener("click", () => {
-                const text = document.getElementById("complaintInput").value.trim();
-                const room = document.getElementById("roomInput").value.trim();
-                const impact = document.getElementById("impactInput").value;
-                const guestName = document.getElementById("guestNameInput").value.trim();
-
-                if (!text || !room) {
-                    alert("Harap isi Nomor Kamar dan Detail Komplain!");
-                    return;
-                }
-
-                document.getElementById("loading").classList.remove("hidden");
-                document.getElementById("loading").classList.add("flex");
-                document.getElementById("resultSection").classList.add("hidden");
-
-                setTimeout(() => {
-                    document.getElementById("loading").classList.add("hidden");
-                    document.getElementById("loading").classList.remove("flex");
-
-                    const aiResult = analyzeComplaintAI(text, room, impact, guestName);
-                    currentPendingResult = {
-                        id: Date.now(),
-                        date: new Date().toLocaleDateString("id-ID"),
-                        rawDate: new Date().toISOString().split("T")[0],
-                        room,
-                        guestName: guestName || "Guest",
-                        text,
-                        impact,
-                        ...aiResult
-                    };
-                    displayAIResult(currentPendingResult);
-                }, 800);
-            });
-
-            document.getElementById("saveCaseBtn").addEventListener("click", () => {
-                if (currentPendingResult) {
-                    StorageManager.saveComplaint(currentPendingResult);
-                    currentPendingResult = null;
-                    document.getElementById("resultSection").classList.add("hidden");
-                    document.getElementById("complaintInput").value = "";
-                    document.getElementById("roomInput").value = "";
-                    document.getElementById("guestNameInput").value = "";
-                    renderDashboard();
-                    alert("Case tersimpan & Dashboard terbarui!");
-                }
-            });
-
-            document.getElementById("clearBtn").addEventListener("click", () => {
-                document.getElementById("complaintInput").value = "";
-                document.getElementById("roomInput").value = "";
-                document.getElementById("guestNameInput").value = "";
-            });
         });
 
-        function displayAIResult(res) {
-            document.getElementById("resDept").innerText = res.dept;
-            document.getElementById("resCategory").innerText = res.category;
-            document.getElementById("resSubCategory").innerText = res.subCategory;
-            document.getElementById("resSentiment").innerText = res.sentiment;
-            document.getElementById("resSeverityScore").innerText = `${res.severityScore}/100`;
-            document.getElementById("resReviewRiskPct").innerText = `${res.reviewRiskPct}%`;
-            document.getElementById("resPredictedStar").innerText = res.predictedStar;
-            document.getElementById("resRevenueAtRisk").innerText = `IDR ${res.revenueAtRisk.toLocaleString("id-ID")}`;
-            document.getElementById("resRootCause").innerText = res.rootCause;
-            document.getElementById("resSummary").innerText = res.summary;
-
-            const checklistContainer = document.getElementById("resRecoveryChecklist");
-            checklistContainer.innerHTML = res.recoveryChecklist.map(item => `<div class="flex items-center gap-1.5 text-slate-700"><span class="text-emerald-600 font-bold">✔</span> ${item}</div>`).join("");
-
-            const badge = document.getElementById("resPriorityBadge");
-            badge.innerText = `Priority: ${res.priority}`;
-            badge.className = `text-xs px-3 py-1 rounded-full font-bold ${res.priority === 'Critical' || res.priority === 'High' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'}`;
-
-            document.getElementById("resultSection").classList.remove("hidden");
-        }
-
         function renderDashboard() {
-            const data = StorageManager.getComplaints();
+            const allData = StorageManager.getComplaints();
+            const selectedUnit = document.getElementById("unitSelectFilter").value;
 
-            document.getElementById("kpiToday").innerText = data.length;
-            const highPri = data.filter(d => d.priority === "High" || d.priority === "Critical").length;
+            // Filter berdasarkan Unit (Canggu / Berawa / All)
+            const filteredData = selectedUnit === "ALL" 
+                ? allData 
+                : allData.filter(d => (d.unit || '').toLowerCase().includes(selectedUnit.toLowerCase()));
+
+            document.getElementById("unitMapBadge").innerText = selectedUnit === "ALL" ? "All Units" : `Unit: ${selectedUnit}`;
+            document.getElementById("kpiToday").innerText = filteredData.length;
+
+            const highPri = filteredData.filter(d => d.priority === "High" || d.priority === "Critical").length;
             document.getElementById("kpiHighPriority").innerText = highPri;
 
-            let totalRevenueRisk = data.reduce((acc, curr) => acc + (curr.revenueAtRisk || 0), 0);
+            let totalRevenueRisk = filteredData.reduce((acc, curr) => acc + (curr.revenueRisk || 0), 0);
             document.getElementById("kpiRevenueRisk").innerText = `IDR ${totalRevenueRisk.toLocaleString("id-ID")}`;
 
-            let deptCounts = {};
-            data.forEach(d => { deptCounts[d.dept] = (deptCounts[d.dept] || 0) + 1; });
+            // Top Source & Top Dept Calculation
+            let sourceCounts = {}, deptCounts = {};
+            filteredData.forEach(d => {
+                sourceCounts[d.source] = (sourceCounts[d.source] || 0) + 1;
+                deptCounts[d.dept] = (deptCounts[d.dept] || 0) + 1;
+            });
+
+            let topSource = Object.keys(sourceCounts).reduce((a, b) => sourceCounts[a] > sourceCounts[b] ? a : b, "-");
             let topDept = Object.keys(deptCounts).reduce((a, b) => deptCounts[a] > deptCounts[b] ? a : b, "-");
+
+            document.getElementById("kpiTopSource").innerText = topSource;
             document.getElementById("kpiMostDept").innerText = topDept;
 
-            renderRoomHeatMap(data);
-            renderTable(data);
-            renderAnalyticsCharts(data, deptCounts);
+            renderRoomHeatMap(filteredData);
+            renderTable(filteredData);
+            renderAnalyticsCharts(deptCounts, sourceCounts);
         }
 
         function renderRoomHeatMap(data) {
@@ -459,24 +274,22 @@
             container.innerHTML = "";
 
             let roomIncidents = {};
-            data.forEach(d => { roomIncidents[d.room] = (roomIncidents[d.room] || 0) + 1; });
+            data.forEach(d => { if(d.room !== '-') roomIncidents[d.room] = (roomIncidents[d.room] || 0) + 1; });
 
-            ROOM_LIST.forEach(roomNum => {
-                const count = roomIncidents[roomNum] || 0;
-                let colorClass = "bg-emerald-100 border-emerald-300 text-emerald-800";
-                let indicator = "🟢";
+            const rooms = Object.keys(roomIncidents);
+            if (rooms.length === 0) {
+                container.innerHTML = `<p class="col-span-4 text-xs text-slate-400 text-center py-4">Belum ada data kamar</p>`;
+                return;
+            }
 
-                if (count >= 3) {
-                    colorClass = "bg-rose-100 border-rose-300 text-rose-800 font-bold";
-                    indicator = "🔴";
-                } else if (count >= 1) {
-                    colorClass = "bg-amber-100 border-amber-300 text-amber-800 font-semibold";
-                    indicator = "🟡";
-                }
+            rooms.forEach(roomNum => {
+                const count = roomIncidents[roomNum];
+                let colorClass = "bg-amber-50 border-amber-300 text-amber-800";
+                if (count >= 3) colorClass = "bg-rose-100 border-rose-400 text-rose-900 font-bold";
 
                 const div = document.createElement("div");
-                div.className = `p-2 rounded-lg border text-center text-xs flex flex-col items-center justify-center ${colorClass}`;
-                div.innerHTML = `<span>Rm ${roomNum} ${indicator}</span><span class="text-[10px] opacity-75">${count} Insiden</span>`;
+                div.className = `p-2 rounded-lg border text-center text-xs ${colorClass}`;
+                div.innerHTML = `<div>Rm ${roomNum}</div><div class="text-[10px] opacity-75">${count} Log</div>`;
                 container.appendChild(div);
             });
         }
@@ -486,7 +299,7 @@
             tbody.innerHTML = "";
 
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400">Belum ada komplain tersimpan. Upload file Excel untuk memulai!</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-slate-400">Belum ada data log komplain. Unggah file Excel Anda!</td></tr>`;
                 return;
             }
 
@@ -494,13 +307,15 @@
                 const tr = document.createElement("tr");
                 tr.className = "hover:bg-slate-50 border-b";
                 tr.innerHTML = `
-                    <td class="p-3 font-semibold">${item.date}<br><span class="text-blue-600">Rm ${item.room}</span></td>
-                    <td class="p-3 font-medium">${item.guestName}</td>
-                    <td class="p-3"><b>${item.category}</b><br><span class="text-slate-400 text-[10px]">${item.rootCause}</span></td>
-                    <td class="p-3"><span class="bg-slate-100 text-slate-700 text-[10px] px-1.5 py-0.5 rounded font-semibold">${item.dept}</span></td>
-                    <td class="p-3"><span class="text-[10px] px-2 py-0.5 rounded font-bold ${item.priority === 'Critical' || item.priority === 'High' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'}">${item.priority}</span></td>
-                    <td class="p-3 font-semibold text-amber-700">${item.reviewRiskPct}% (${item.predictedStar})</td>
-                    <td class="p-3 text-[11px] text-slate-600">${item.recoveryChecklist ? item.recoveryChecklist.join(", ") : '-'}</td>
+                    <td class="p-2.5 font-semibold text-slate-800">${item.guestName}</td>
+                    <td class="p-2.5 font-bold text-blue-600">${item.room}</td>
+                    <td class="p-2.5 text-slate-500">${item.checkIn}</td>
+                    <td class="p-2.5 text-slate-500">${item.checkOut}</td>
+                    <td class="p-2.5"><span class="text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200 font-medium">${item.source}</span></td>
+                    <td class="p-2.5 font-medium text-slate-800">${item.remarks}</td>
+                    <td class="p-2.5 font-semibold text-emerald-700">${item.unit}</td>
+                    <td class="p-2.5 border-l bg-slate-50 font-bold text-slate-700">${item.dept}</td>
+                    <td class="p-2.5 bg-slate-50 text-slate-600 text-[11px]">${item.rootCause}</td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -509,40 +324,37 @@
         function filterHistoryTable() {
             const search = document.getElementById("searchInput").value.toLowerCase();
             const dept = document.getElementById("deptFilter").value;
-            const priority = document.getElementById("priorityFilter").value;
+            const selectedUnit = document.getElementById("unitSelectFilter").value;
 
             const data = StorageManager.getComplaints().filter(item => {
-                const matchSearch = item.guestName.toLowerCase().includes(search) || item.room.includes(search) || item.text.toLowerCase().includes(search);
+                const matchUnit = selectedUnit === "ALL" || (item.unit || '').toLowerCase().includes(selectedUnit.toLowerCase());
+                const matchSearch = item.guestName.toLowerCase().includes(search) || item.room.includes(search) || item.remarks.toLowerCase().includes(search);
                 const matchDept = dept === "" || item.dept === dept;
-                const matchPriority = priority === "" || item.priority === priority;
-                return matchSearch && matchDept && matchPriority;
+                return matchUnit && matchSearch && matchDept;
             });
 
             renderTable(data);
         }
 
-        function renderAnalyticsCharts(data, deptCounts) {
+        function renderAnalyticsCharts(deptCounts, sourceCounts) {
             const deptCtx = document.getElementById("deptChart").getContext("2d");
             if (deptChartInstance) deptChartInstance.destroy();
             deptChartInstance = new Chart(deptCtx, {
                 type: 'bar',
                 data: {
-                    labels: Object.keys(deptCounts).length ? Object.keys(deptCounts) : ['Housekeeping', 'Engineering', 'Front Office'],
-                    datasets: [{ label: 'Insiden per Dept', data: Object.keys(deptCounts).length ? Object.values(deptCounts) : [0,0,0], backgroundColor: '#3b82f6' }]
+                    labels: Object.keys(deptCounts),
+                    datasets: [{ label: 'Komplain per AI Dept', data: Object.values(deptCounts), backgroundColor: '#3b82f6' }]
                 },
                 options: { responsive: true, maintainAspectRatio: false }
             });
 
-            let priCounts = { Critical: 0, High: 0, Medium: 0, Low: 0 };
-            data.forEach(d => { if (priCounts[d.priority] !== undefined) priCounts[d.priority]++; });
-
-            const priCtx = document.getElementById("priorityChart").getContext("2d");
-            if (priorityChartInstance) priorityChartInstance.destroy();
-            priorityChartInstance = new Chart(priCtx, {
+            const srcCtx = document.getElementById("sourceChart").getContext("2d");
+            if (sourceChartInstance) sourceChartInstance.destroy();
+            sourceChartInstance = new Chart(srcCtx, {
                 type: 'doughnut',
                 data: {
-                    labels: Object.keys(priCounts),
-                    datasets: [{ data: Object.values(priCounts), backgroundColor: ['#e11d48', '#f97316', '#f59e0b', '#10b981'] }]
+                    labels: Object.keys(sourceCounts),
+                    datasets: [{ data: Object.values(sourceCounts), backgroundColor: ['#0284c7', '#059669', '#d97706', '#7c3aed'] }]
                 },
                 options: { responsive: true, maintainAspectRatio: false }
             });
@@ -553,20 +365,6 @@
                 StorageManager.clearAll();
                 renderDashboard();
             }
-        }
-
-        function exportExcel() {
-            const data = StorageManager.getComplaints();
-            if (!data.length) return alert("Tidak ada data untuk di-export!");
-            const ws = XLSX.utils.json_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Complaint Report");
-            XLSX.writeFile(wb, `stayZIN_Insight_v2_Report.xlsx`);
-        }
-
-        function exportPDF() {
-            const element = document.getElementById("exportableArea");
-            html2pdf().set({ margin: 0.3, filename: 'stayZIN_Insight_v2_Report.pdf', html2canvas: { scale: 2 } }).from(element).save();
         }
     </script>
 </body>
