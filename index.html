@@ -3,158 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>stayZIN Insight v2.0 - Executive Complaint Analytics</title>
-    <link rel="stylesheet" href="style.css">
+    <title>stayZIN Insight v2.0 - AI Guest Experience Intelligence</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js untuk Complaint Trend & Heat Map -->
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- html2pdf & SheetJS untuk Export PDF/Excel -->
+    <!-- html2pdf & SheetJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800 p-4 md:p-8">
+<body class="bg-slate-100 font-sans text-slate-800 p-4 md:p-8">
     <div id="exportableArea" class="max-w-7xl mx-auto space-y-6">
         
-        <!-- Header -->
+        <!-- HEADER & EXPORT -->
         <header class="flex flex-col md:flex-row md:items-center justify-between bg-white p-6 rounded-xl shadow-sm border border-slate-200 gap-4">
             <div class="flex items-center gap-4">
                 <img src="logo-zin.png" alt="ZIN Logo" class="h-12 w-auto object-contain" onerror="this.style.display='none'">
                 <div>
                     <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
                         stayZIN Insight 
-                        <span class="text-xs font-semibold bg-blue-100 text-blue-700 px-2 py-1 rounded-full">v2.0 Executive</span>
+                        <span class="text-xs font-semibold bg-blue-100 text-blue-700 px-2.5 py-0.5 rounded-full">v2.0 Executive</span>
                     </h1>
-                    <p class="text-sm text-slate-500">AI Complaint Analysis, Severity Matrix & Recovery Intelligence</p>
+                    <p class="text-xs text-slate-500">AI-Powered Guest Experience & Complaint Intelligence Platform</p>
                 </div>
             </div>
-            <!-- Export Buttons -->
+            
             <div class="flex items-center gap-2" data-html2canvas-ignore="true">
-                <button onclick="exportExcel()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
+                <button onclick="exportExcel()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition">
                     📊 Export Excel
                 </button>
-                <button onclick="exportPDF()" class="px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
-                    📄 Export PDF
+                <button onclick="exportPDF()" class="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold transition">
+                    📄 Export PDF Report
                 </button>
             </div>
         </header>
 
-        <!-- KPI SUMMARY CARDS -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <!-- 🏠 MANAGEMENT KPI DASHBOARD -->
+        <section class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-1">
-                <p class="text-xs font-medium text-slate-500 uppercase">Total Komplain</p>
-                <p id="kpiTotal" class="text-2xl font-black text-slate-800">0</p>
+                <p class="text-[11px] font-semibold text-slate-500 uppercase">Today's Complaints</p>
+                <p id="kpiToday" class="text-2xl font-black text-slate-800">0</p>
             </div>
             <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-1">
-                <p class="text-xs font-medium text-slate-500 uppercase">🔴 High / Critical Severity</p>
-                <p id="kpiCritical" class="text-2xl font-black text-rose-600">0</p>
+                <p class="text-[11px] font-semibold text-slate-500 uppercase">🔴 High Priority</p>
+                <p id="kpiHighPriority" class="text-2xl font-black text-rose-600">0</p>
             </div>
             <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-1">
-                <p class="text-xs font-medium text-slate-500 uppercase">⭐ High Review Risk</p>
-                <p id="kpiHighRisk" class="text-2xl font-black text-amber-600">0</p>
+                <p class="text-[11px] font-semibold text-slate-500 uppercase">Avg Resolution Time</p>
+                <p id="kpiAvgResolution" class="text-2xl font-black text-blue-600">1.8 hrs</p>
             </div>
             <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-1">
-                <p class="text-xs font-medium text-slate-500 uppercase">Dept Paling Sering</p>
-                <p id="kpiTopDept" class="text-xl font-bold text-blue-600">-</p>
+                <p class="text-[11px] font-semibold text-slate-500 uppercase">⭐ Review Risk</p>
+                <p id="kpiReviewRisk" class="text-xl font-bold text-amber-600">Low</p>
             </div>
-        </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-1">
+                <p class="text-[11px] font-semibold text-slate-500 uppercase">Most Dept Issue</p>
+                <p id="kpiMostDept" class="text-base font-bold text-slate-800 truncate">-</p>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-1 bg-rose-50 border-rose-200">
+                <p class="text-[11px] font-semibold text-rose-700 uppercase">Revenue at Risk</p>
+                <p id="kpiRevenueRisk" class="text-base font-black text-rose-700">IDR 0</p>
+            </div>
+        </section>
 
-        <!-- INPUT FORM -->
+        <!-- ✨ AI COMPLAINT ANALYZER (INPUT FORM) -->
         <section class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4" data-html2canvas-ignore="true">
-            <h2 class="text-base font-bold text-slate-800">Input Detail Komplain / Insiden Kamar</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <input type="text" id="roomInput" placeholder="No. Kamar (contoh: 408)" class="p-2.5 border rounded-lg text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500">
-                <select id="impactInput" class="p-2.5 border rounded-lg text-sm bg-slate-50 focus:bg-white">
-                    <option value="Low">Dampak Tamu: Low (Minor inconvenience)</option>
-                    <option value="Medium" selected>Dampak Tamu: Medium (Guest upset / requested fix)</option>
-                    <option value="High">Dampak Tamu: High (Guest demanded room change/refund/angry)</option>
-                </select>
-                <input type="text" id="guestNameInput" placeholder="Nama Tamu (Opsional)" class="p-2.5 border rounded-lg text-sm bg-slate-50 focus:bg-white">
-            </div>
-            <textarea id="complaintInput" rows="3" class="w-full p-3 border rounded-lg text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500" placeholder="Jelaskan detail komplain di sini... (Contoh: AC kamar 102 bocor air & sprei ada noda kotor)"></textarea>
+            <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                ✨ AI Complaint Analyzer & Machine Learning Engine
+            </h2>
             
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <input type="text" id="guestNameInput" placeholder="Nama Tamu (e.g. John Doe)" class="p-2.5 border rounded-lg text-sm bg-slate-50">
+                <input type="text" id="roomInput" placeholder="No. Kamar (e.g. 201)" class="p-2.5 border rounded-lg text-sm bg-slate-50">
+                <select id="impactInput" class="p-2.5 border rounded-lg text-sm bg-slate-50">
+                    <option value="Low">Dampak Tamu: Low (Minor issue)</option>
+                    <option value="Medium" selected>Dampak Tamu: Medium (Guest upset / requested fix)</option>
+                    <option value="High">Dampak Tamu: High (Demanded room change / refund)</option>
+                </select>
+            </div>
+
+            <textarea id="complaintInput" rows="3" class="w-full p-3 border rounded-lg text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500" placeholder="Deskripsikan komplain... (Contoh: Kamar 201 berbau apek / musty smell, AC tidak dingin dan kamar mandi kotor)"></textarea>
+
             <div class="flex justify-end gap-2">
                 <button id="clearBtn" class="px-4 py-2 text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-lg transition">Clear</button>
                 <button id="analyzeBtn" class="px-6 py-2 text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-sm transition flex items-center gap-1.5">
-                    🤖 Analyze & Classify AI
+                    ✨ Analyze & Classify AI
                 </button>
             </div>
         </section>
 
         <!-- LOADING INDICATOR -->
-        <div id="loading" class="hidden flex-col items-center justify-center p-8 bg-white rounded-xl border border-slate-200 shadow-sm space-y-3">
+        <div id="loading" class="hidden flex-col items-center justify-center p-8 bg-white rounded-xl border border-slate-200 space-y-2">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <p class="text-xs font-semibold text-slate-600">AI sedang memetakan Severity Matrix, Review Risk, & Recovery Plan...</p>
+            <p class="text-xs font-semibold text-slate-600">AI Machine Learning sedang menganalisis Root Cause & Review Risk...</p>
         </div>
 
-        <!-- AI RESULT DASHBOARD CARD -->
+        <!-- AI RESULT OUTPUT CARD -->
         <section id="resultSection" class="hidden bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
             <div class="border-b pb-3 flex justify-between items-center">
-                <h2 class="text-base font-bold text-slate-800">🤖 AI Analysis & Recovery Recommendation</h2>
-                <span id="resSeverityBadge" class="text-xs px-3 py-1 rounded-full font-bold">Severity</span>
+                <h3 class="text-base font-bold text-slate-800">🤖 AI Diagnostic & Diagnostic Result</h3>
+                <span id="resPriorityBadge" class="text-xs px-3 py-1 rounded-full font-bold">Priority</span>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <!-- Col 1: Severity Matrix & Review Risk -->
-                <div class="p-4 bg-slate-50 rounded-lg border space-y-3">
-                    <div>
-                        <p class="text-xs text-slate-500 uppercase font-semibold">🔴 Severity Matrix Level</p>
-                        <p id="resSeverity" class="text-lg font-bold text-slate-800">-</p>
-                    </div>
-                    <div>
-                        <p class="text-xs text-slate-500 uppercase font-semibold">⭐ Review Risk Prediction</p>
-                        <p id="resRisk" class="text-sm font-semibold">-</p>
-                    </div>
-                    <div>
-                        <p class="text-xs text-slate-500 uppercase font-semibold">🏢 Departemen Bertanggung Jawab</p>
-                        <div id="resDepts" class="flex flex-wrap gap-1 mt-1"></div>
-                    </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
+                <!-- Col 1: Classification -->
+                <div class="p-3 bg-slate-50 rounded-lg border space-y-2">
+                    <p class="font-bold text-slate-700 border-b pb-1">KLASIFIKASI AI</p>
+                    <p><b>Dept:</b> <span id="resDept">-</span></p>
+                    <p><b>Category:</b> <span id="resCategory">-</span></p>
+                    <p><b>Sub Category:</b> <span id="resSubCategory">-</span></p>
+                    <p><b>Sentiment:</b> <span id="resSentiment">-</span></p>
                 </div>
 
-                <!-- Col 2: Action Plan & Operational SOP -->
-                <div class="p-4 bg-slate-50 rounded-lg border space-y-2 col-span-2">
-                    <p class="text-xs text-slate-500 uppercase font-semibold">🛠️ AI Recovery Action Plan & Guest Compensation</p>
-                    <p id="resRecovery" class="text-sm text-slate-800 font-medium whitespace-pre-line">-</p>
+                <!-- Col 2: Metric AI Score -->
+                <div class="p-3 bg-slate-50 rounded-lg border space-y-2">
+                    <p class="font-bold text-slate-700 border-b pb-1">METRIK AI</p>
+                    <p><b>Severity Score:</b> <span id="resSeverityScore" class="font-bold text-rose-600">-</span></p>
+                    <p><b>Review Risk:</b> <span id="resReviewRiskPct" class="font-bold text-amber-600">-</span></p>
+                    <p><b>Predicted Star:</b> <span id="resPredictedStar">-</span></p>
+                    <p><b>Est. Revenue at Risk:</b> <span id="resRevenueAtRisk" class="font-bold text-rose-600">-</span></p>
                 </div>
+
+                <!-- Col 3: Root Cause & AI Summary -->
+                <div class="p-3 bg-slate-50 rounded-lg border space-y-2 md:col-span-2">
+                    <p class="font-bold text-slate-700 border-b pb-1">ROOT CAUSE & RECOVERY RECOMMENDATION</p>
+                    <p><b>🔍 Root Cause:</b> <span id="resRootCause" class="text-slate-700 font-medium">-</span></p>
+                    <p><b>🤖 AI Summary:</b> <span id="resSummary" class="text-slate-600 italic">-</span></p>
+                    <div class="pt-2">
+                        <p class="font-bold text-slate-700"> Recommended Actions:</p>
+                        <div id="resRecoveryChecklist" class="mt-1 space-y-1"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end">
+                <button id="saveCaseBtn" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs transition">
+                    📋 Save Case & Update Dashboard
+                </button>
             </div>
         </section>
 
-        <!-- ANALYTICS SECTION: TREND & HEATMAP CHART -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- 📈 Complaint Trend -->
+        <!-- 🔥 ROOM HEAT MAP & ANALYTICS -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Heat Map per Room (1 Col) -->
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
-                <h3 class="text-sm font-bold text-slate-800">📈 Complaint Trend (By Date)</h3>
-                <div class="h-60">
-                    <canvas id="trendChart"></canvas>
+                <h3 class="text-sm font-bold text-slate-800 flex items-center justify-between">
+                    <span>🔥 Complaint Heat Map per Room</span>
+                    <span class="text-[10px] font-normal text-slate-500">Live Frequency</span>
+                </h3>
+                <div id="roomHeatMap" class="grid grid-cols-4 gap-2 pt-2">
+                    <!-- Dynamic Room Heat Map -->
                 </div>
             </div>
 
-            <!-- 📊 Complaint Heat Map (By Dept) -->
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
-                <h3 class="text-sm font-bold text-slate-800">📊 Department Heat Map</h3>
-                <div class="h-60">
-                    <canvas id="heatMapChart"></canvas>
+            <!-- Department & Priority Charts (2 Col) -->
+            <div class="lg:col-span-2 bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                <h3 class="text-sm font-bold text-slate-800">📊 Department Performance & Priority Breakdown</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 h-60">
+                    <div><canvas id="deptChart"></canvas></div>
+                    <div><canvas id="priorityChart"></canvas></div>
                 </div>
             </div>
         </div>
 
-        <!-- TABLE COMPLAINT LOG HISTORY -->
+        <!-- 📚 COMPLAINT HISTORY TABLE -->
         <section class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-            <div class="flex justify-between items-center" data-html2canvas-ignore="true">
-                <h2 class="text-base font-bold text-slate-800">📋 Complaint & Incident Logs</h2>
-                <button id="clearHistoryBtn" class="text-xs text-rose-500 hover:underline">Hapus Semua Histori</button>
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3" data-html2canvas-ignore="true">
+                <h3 class="text-base font-bold text-slate-800">📚 Complaint History & Logs</h3>
+                
+                <!-- Filters & Search -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <input type="text" id="searchInput" placeholder="Cari Tamu/Kamar/Keyword..." onkeyup="filterHistoryTable()" class="p-2 border rounded-lg text-xs bg-slate-50">
+                    <select id="deptFilter" onchange="filterHistoryTable()" class="p-2 border rounded-lg text-xs bg-slate-50">
+                        <option value="">Semua Dept</option>
+                        <option value="Housekeeping">Housekeeping</option>
+                        <option value="Engineering">Engineering</option>
+                        <option value="Front Office">Front Office</option>
+                    </select>
+                    <select id="priorityFilter" onchange="filterHistoryTable()" class="p-2 border rounded-lg text-xs bg-slate-50">
+                        <option value="">Semua Priority</option>
+                        <option value="Critical">Critical</option>
+                        <option value="High">High</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Low">Low</option>
+                    </select>
+                </div>
             </div>
 
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-xs">
                     <thead>
                         <tr class="bg-slate-100 text-slate-700 border-b">
-                            <th class="p-3">Tanggal / Kamar</th>
-                            <th class="p-3">Komplain Detail</th>
-                            <th class="p-3">Departemen</th>
-                            <th class="p-3">Severity</th>
+                            <th class="p-3">Tanggal / Room</th>
+                            <th class="p-3">Tamu</th>
+                            <th class="p-3">Category / Root Cause</th>
+                            <th class="p-3">Dept</th>
+                            <th class="p-3">Priority</th>
                             <th class="p-3">Review Risk</th>
-                            <th class="p-3">AI Recovery Recommendation</th>
+                            <th class="p-3">Recovery Plan</th>
                         </tr>
                     </thead>
                     <tbody id="historyTable" class="divide-y divide-slate-200">
