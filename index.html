@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>stayZIN Insight - Multi-Issue AI Complaint Intelligence</title>
+    <title>stayZIN Insight - AI Multi-Issue Complaint Intelligence</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- SheetJS (XLSX Reader) -->
@@ -17,9 +17,9 @@
             <div>
                 <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
                     stayZIN Insight 
-                    <span class="text-xs font-semibold bg-indigo-100 text-indigo-700 px-2.5 py-0.5 rounded-full">Multi-Issue Detection Engine</span>
+                    <span class="text-xs font-semibold bg-indigo-100 text-indigo-700 px-2.5 py-0.5 rounded-full">Multi-Issue AI Engine</span>
                 </h1>
-                <p class="text-xs text-slate-500">AI Complaint Intelligence & Taxonomy Classifier</p>
+                <p class="text-xs text-slate-500">AI Complaint Intelligence & Sub-Taxonomy Classifier</p>
             </div>
             
             <div class="flex items-center gap-3">
@@ -59,7 +59,7 @@
             <div class="flex justify-between items-center flex-wrap gap-2">
                 <div>
                     <h3 class="text-sm font-bold text-indigo-900">📂 Import Log Ulasan / Komplain Tamu (.XLSX / .CSV)</h3>
-                    <p class="text-xs text-indigo-700">Sistem AI akan otomatis membaca seluruh isu yang ada pada ulasan tamu (1 ulasan bisa >1 isu).</p>
+                    <p class="text-xs text-indigo-700">Sistem AI akan menganalisis seluruh isu secara detail dan memecah feedback umum menjadi lebih spesifik.</p>
                 </div>
             </div>
             <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 cursor-pointer"/>
@@ -95,7 +95,7 @@
     </div>
 
     <script>
-        const STORAGE_KEY = 'stayzin_multi_issue_v1';
+        const STORAGE_KEY = 'stayzin_multi_issue_v2';
         
         const StorageManager = {
             getData: () => JSON.parse(localStorage.getItem(STORAGE_KEY)) || [],
@@ -103,7 +103,7 @@
             clear: () => localStorage.removeItem(STORAGE_KEY)
         };
 
-        // 🧠 ALGORITMA MULTI-ISSUE DETECTION AI
+        // 🧠 ALGORITMA MULTI-ISSUE DETECTION AI (WITH SUB-CLASSIFICATION)
         function analyzeComplaintAI(text) {
             const lower = (text || '').toLowerCase();
             
@@ -113,37 +113,21 @@
             let revenueRisk = 0;
 
             // 1. Housekeeping / Kebersihan / Bau / Serangga
-            if (lower.includes("clean") || lower.includes("smell") || lower.includes("musty") || lower.includes("odor") || lower.includes("linen") || lower.includes("towel") || lower.includes("pest") || lower.includes("insect") || lower.includes("flies")) {
+            if (lower.includes("clean") || lower.includes("smell") || lower.includes("musty") || lower.includes("odor") || lower.includes("linen") || lower.includes("towel") || lower.includes("pest") || lower.includes("insect") || lower.includes("flies") || lower.includes("damp")) {
                 depts.add("Housekeeping");
-                
-                if (lower.includes("smell") || lower.includes("musty") || lower.includes("odor")) {
-                    categories.add("Odor / smell");
-                }
-                if (lower.includes("pest") || lower.includes("insect") || lower.includes("flies")) {
-                    categories.add("Pest control");
-                }
-                if (lower.includes("linen") || lower.includes("towel") || lower.includes("bed")) {
-                    categories.add("Linen / Laundry");
-                }
-                if (lower.includes("dirty") || lower.includes("clean")) {
-                    categories.add("Cleanliness");
-                }
+                if (lower.includes("smell") || lower.includes("musty") || lower.includes("odor") || lower.includes("damp")) categories.add("Odor / Smell");
+                if (lower.includes("pest") || lower.includes("insect") || lower.includes("flies")) categories.add("Pest Control");
+                if (lower.includes("linen") || lower.includes("towel") || lower.includes("bed")) categories.add("Linen & Towels");
+                if (lower.includes("dirty") || lower.includes("clean")) categories.add("Cleanliness");
                 revenueRisk += 350000;
             }
 
             // 2. Engineering / AC / Ventilasi / Kerusakan
             if (lower.includes("ac") || lower.includes("air conditioning") || lower.includes("ventilation") || lower.includes("leak") || lower.includes("water") || lower.includes("shower") || lower.includes("broken")) {
                 depts.add("Engineering");
-                
-                if (lower.includes("ac") || lower.includes("air conditioning")) {
-                    categories.add("AC / Temperature");
-                }
-                if (lower.includes("ventilation")) {
-                    categories.add("Ventilation Issue");
-                }
-                if (lower.includes("leak") || lower.includes("water") || lower.includes("shower")) {
-                    categories.add("Plumbing / Water Leakage");
-                }
+                if (lower.includes("ac") || lower.includes("air conditioning")) categories.add("AC / Temperature");
+                if (lower.includes("ventilation")) categories.add("Ventilation Issue");
+                if (lower.includes("leak") || lower.includes("water") || lower.includes("shower")) categories.add("Plumbing / Water Leakage");
                 priority = "Medium";
                 revenueRisk += 500000;
             }
@@ -156,30 +140,50 @@
                 revenueRisk += 750000;
             }
 
-            // 4. Front Office / Service
-            if (lower.includes("staff") || lower.includes("service") || lower.includes("reception") || lower.includes("check in") || lower.includes("rude")) {
+            // 4. Front Office / Hospitality Service
+            if (lower.includes("staff") || lower.includes("service") || lower.includes("reception") || lower.includes("check in") || lower.includes("rude") || lower.includes("friendly") || lower.includes("welcoming")) {
                 depts.add("Front Office");
-                categories.add("Service Quality / Staff");
+                categories.add("Service Quality / Hospitality");
                 revenueRisk += 300000;
             }
 
-            // 5. Food & Beverage
-            if (lower.includes("food") || lower.includes("breakfast") || lower.includes("restaurant") || lower.includes("taste")) {
-                depts.add("F&B / Kitchen");
-                categories.add("Food Quality");
+            // 5. Food & Beverage / Massage / Spa
+            if (lower.includes("food") || lower.includes("breakfast") || lower.includes("restaurant") || lower.includes("taste") || lower.includes("massage") || lower.includes("spa")) {
+                depts.add("F&B & Wellness");
+                if (lower.includes("food") || lower.includes("breakfast") || lower.includes("restaurant") || lower.includes("taste")) categories.add("Food & Beverage Quality");
+                if (lower.includes("massage") || lower.includes("spa")) categories.add("Spa / Wellness Service");
                 revenueRisk += 250000;
             }
 
-            // Jika terdeteksi lebih dari 2 masalah sekaligus dalam 1 ulasan, tingkatkan Priority ke High
-            if (categories.size >= 2) {
-                priority = "High";
+            // 6. Location & Accessibility (Spesifik)
+            if (lower.includes("location") || lower.includes("beach") || lower.includes("ocean") || lower.includes("close to") || lower.includes("walk")) {
+                depts.add("Guest Experience");
+                categories.add("Location & Access");
             }
 
-            // Default jika review tidak mengandung masalah
+            // 7. Value & Price (Spesifik)
+            if (lower.includes("price") || lower.includes("expensive") || lower.includes("worth") || lower.includes("discount") || lower.includes("value")) {
+                depts.add("Management");
+                categories.add("Value / Pricing");
+            }
+
+            // 8. SUB-KLASIFIKASI SPESIFIK UNTUK UMUM/GENERAL REMARKS
             if (depts.size === 0) {
-                depts.add("General");
-                categories.add("General Feedback");
+                depts.add("Guest Experience");
+                
+                if (lower.includes("nice") || lower.includes("good") || lower.includes("great") || lower.includes("excellent") || lower.includes("amazing") || lower.includes("loved")) {
+                    categories.add("Overall Stay Satisfaction");
+                } else if (lower.includes("amenities") || lower.includes("facility") || lower.includes("pool") || lower.includes("gym")) {
+                    categories.add("Facility & Amenities");
+                } else {
+                    categories.add("General Atmosphere & Vibe");
+                }
                 revenueRisk = 0;
+            }
+
+            // Jika terdeteksi lebih dari 2 komplain operasional sekaligus, set Priority ke High
+            if (categories.size >= 2 && (depts.has("Engineering") || depts.has("Housekeeping") || depts.has("Noise & Disturbance"))) {
+                priority = "High";
             }
 
             return { 
@@ -257,7 +261,6 @@
                 if (item.priority === "High") highPriorityCount++;
                 totalRevenueRisk += item.revenueRisk;
 
-                // Hitung Dept terbanyak
                 if (item.dept) {
                     const deptsArr = item.dept.split(", ");
                     deptsArr.forEach(d => {
@@ -266,11 +269,10 @@
                 }
             });
 
-            // Cari dept yang paling sering muncul
             let mostDept = "-";
             let maxCount = 0;
             for (const [dept, count] of Object.entries(deptCounts)) {
-                if (count > maxCount && dept !== "General") {
+                if (count > maxCount && dept !== "Guest Experience" && dept !== "Management") {
                     maxCount = count;
                     mostDept = dept;
                 }
@@ -304,7 +306,6 @@
                 const tr = document.createElement("tr");
                 tr.className = "hover:bg-slate-50 border-b";
 
-                // Badge warna priority
                 let priorityBadge = '<span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-bold">Low</span>';
                 if (item.priority === 'Medium') priorityBadge = '<span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-bold">Medium</span>';
                 if (item.priority === 'High') priorityBadge = '<span class="bg-rose-100 text-rose-700 px-2 py-0.5 rounded font-bold">High</span>';
