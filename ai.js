@@ -1,70 +1,89 @@
-// stayZIN Insight AI Engine v2.0
-function processComplaintAI(text, room, impact) {
-    const textLower = text.toLowerCase();
-    let departments = [];
-    let actions = [];
-    let severityScore = 1;
+// stayZIN Insight Machine Learning Engine v2.0
+function analyzeComplaintAI(text, room, impact, guestName) {
+    const lower = text.toLowerCase();
+    
+    let dept = "Management";
+    let category = "General Service";
+    let subCategory = "Operational Issue";
+    let rootCause = "Unspecified Operational Failure";
+    let priority = "Medium";
+    let severityScore = 50;
+    let reviewRiskPct = 50;
+    let predictedStar = "⭐⭐⭐ (3/5)";
+    let sentiment = "Negative";
+    let revenueAtRisk = 500000; // IDR
 
-    // 1. DEPARTMENT IDENTIFICATION & SEVERITY WEIGHT
-    if (textLower.includes("kotor") || textLower.includes("seprai") || textLower.includes("handuk") || textLower.includes("hk") || textLower.includes("bau") || textLower.includes("sampah") || textLower.includes("linen") || textLower.includes("kecoa") || textLower.includes("serangga")) {
-        departments.push("Housekeeping");
-        actions.push("• HK: Inspeksi ulang kamar, re-clean, dan ganti linen/amenities.");
-        severityScore += 1;
+    let recoveryChecklist = ["Apology Letter from Management"];
+
+    // 🧠 MACHINE LEARNING KNOWLEDGE BASE (Pola Kata Kunci)
+    if (lower.includes("musty") || lower.includes("bau") || lower.includes("apek") || lower.includes("kotor") || lower.includes("humidity") || lower.includes("lembap") || lower.includes("mold") || lower.includes("jamur") || lower.includes("sprei") || lower.includes("serangga") || lower.includes("kecoa")) {
+        dept = "Housekeeping";
+        category = "Humidity / Cleanliness";
+        if (lower.includes("bau") || lower.includes("musty") || lower.includes("apek") || lower.includes("lembap")) {
+            subCategory = "Musty Smell / Moldy Room";
+            rootCause = "High Room Humidity & Lack of Ventilation / Dehumidifier";
+            recoveryChecklist.push("Deep Cleaning & Air Purifier", "Room Move Offer", "Fruit Basket");
+        } else {
+            subCategory = "Linen / Sanitation";
+            rootCause = "Inadequate Housekeeping Inspection SOP";
+            recoveryChecklist.push("Re-clean Room & Replace Linen", "Late Check-out Offer");
+        }
+        severityScore += 25;
+    } 
+    else if (lower.includes("ac") || lower.includes("dingin") || lower.includes("panas") || lower.includes("bocor") || lower.includes("air") || lower.includes("matif") || lower.includes("tv") || lower.includes("bising") || lower.includes("wifi")) {
+        dept = "Engineering";
+        category = "Facilities & AC";
+        subCategory = lower.includes("ac") ? "AC Malfunction / Water Leakage" : "Hardware / Network Failure";
+        rootCause = "Preventive Maintenance Schedule Lapse";
+        recoveryChecklist.push("Immediate Engineering Fix", "Drink Voucher at Bar", "Room Upgrade");
+        severityScore += 30;
+    }
+    else if (lower.includes("check in") || lower.includes("lama") || lower.includes("staf") || lower.includes("ramah") || lower.includes("antri") || lower.includes("sopan")) {
+        dept = "Front Office";
+        category = "Service Speed & Courtesy";
+        subCategory = "Check-in Delay / Staff Attitude";
+        rootCause = "Peak Hour Staffing Shortage / Communication Gap";
+        recoveryChecklist.push("Duty Manager Apology", "Welcome Drink / Discount Voucher");
+        severityScore += 20;
     }
 
-    if (textLower.includes("ac") || textLower.includes("dingin") || textLower.includes("panas") || textLower.includes("bocor") || textLower.includes("air") || textLower.includes("lampu") || textLower.includes("tv") || textLower.includes("kipas") || textLower.includes("fan") || textLower.includes("outlet") || textLower.includes("power") || textLower.includes("matif")) {
-        departments.push("Engineering");
-        actions.push("• ENG: Cek teknis mendesak & lakukan perbaikan fasilitas.");
-        severityScore += 1;
+    // Dynamic Impact Multiplier
+    if (impact === "High") {
+        severityScore += 20;
+        priority = "Critical";
+        reviewRiskPct = 90;
+        predictedStar = "⭐ (1/5)";
+        revenueAtRisk = 2500000;
+        recoveryChecklist.push("Full Room Upgrade", "Complimentary Dinner / Discount");
+    } else if (impact === "Medium") {
+        severityScore += 10;
+        priority = "High";
+        reviewRiskPct = 65;
+        predictedStar = "⭐⭐⭐ (3/5)";
+        revenueAtRisk = 1200000;
+    } else {
+        priority = "Low";
+        reviewRiskPct = 25;
+        predictedStar = "⭐⭐⭐⭐ (4/5)";
+        revenueAtRisk = 300000;
     }
 
-    if (textLower.includes("check in") || textLower.includes("check out") || textLower.includes("staf") || textLower.includes("lama") || textLower.includes("antri") || textLower.includes("ramah") || textLower.includes("lobby") || textLower.includes("sopan")) {
-        departments.push("Front Office");
-        actions.push("• FO: Follow up komunikasi langsung & jamin kelancaran alur tamu.");
-        severityScore += 1;
-    }
+    severityScore = Math.min(Math.max(severityScore, 10), 99);
 
-    if (departments.length === 0) {
-        departments.push("Management");
-        actions.push("• MGMT: Duty Manager langsung handle & investigasi masalah.");
-    }
-
-    // Adjust severity by Impact Input
-    if (impact === "Medium") severityScore += 1;
-    if (impact === "High") severityScore += 2;
-
-    // 2. SEVERITY MATRIX EVALUATION
-    let severityLevel = "LOW";
-    let severityBadgeClass = "bg-green-100 text-green-800";
-    if (severityScore >= 3 && severityScore < 4) {
-        severityLevel = "MEDIUM";
-        severityBadgeClass = "bg-amber-100 text-amber-800";
-    } else if (severityScore >= 4) {
-        severityLevel = "HIGH / CRITICAL";
-        severityBadgeClass = "bg-rose-100 text-rose-800";
-    }
-
-    // 3. REVIEW RISK PREDICTION
-    let reviewRisk = "🟢 Low Risk (Bisa diselesaikan dengan perbaikan cepat)";
-    if (severityLevel === "MEDIUM") {
-        reviewRisk = "🟡 Medium Risk (Potensi review 3-4 bintang jika tak ada ucapan maaf)";
-    } else if (severityLevel === "HIGH / CRITICAL") {
-        reviewRisk = "🔴 High Risk (Risiko tinggi review 1-2 bintang di Google/OTA!)";
-    }
-
-    // 4. AI RECOVERY RECOMMENDATION
-    let recoveryPlan = actions.join("\n");
-    if (severityLevel === "HIGH / CRITICAL") {
-        recoveryPlan += "\n🎁 RECOVERY INITIATIVE: Berikan complimentary drink/breakfast voucher atau tawarkan pindah kamar (room move) segera + Personal Apology dari Duty Manager.";
-    } else if (severityLevel === "MEDIUM") {
-        recoveryPlan += "\n☕ RECOVERY INITIATIVE: Berikan welcome drink/late check-out gratis 1 jam sebagai bentuk empati.";
-    }
+    const summary = `Komplain terkait ${category} (${subCategory}) di Kamar ${room}. Terindikasi disebabkan oleh ${rootCause}. Risiko ulasan negatif mencapai ${reviewRiskPct}%.`;
 
     return {
-        departments,
-        severityLevel,
-        severityBadgeClass,
-        reviewRisk,
-        recoveryPlan
+        dept,
+        category,
+        subCategory,
+        rootCause,
+        priority,
+        severityScore,
+        reviewRiskPct,
+        predictedStar,
+        sentiment,
+        revenueAtRisk,
+        recoveryChecklist,
+        summary
     };
 }
