@@ -1,84 +1,89 @@
 // stayZIN Insight Controller v2.0
-let trendChartInstance = null;
-let heatMapChartInstance = null;
+let currentPendingResult = null;
+let deptChartInstance = null;
+let priorityChartInstance = null;
+
+// Kamar yang dipantau untuk Heat Map (Contoh)
+const ROOM_LIST = ["101", "102", "103", "104", "201", "202", "203", "204", "301", "302", "303", "304"];
 
 document.addEventListener("DOMContentLoaded", () => {
-    const complaintInput = document.getElementById("complaintInput");
-    const roomInput = document.getElementById("roomInput");
-    const impactInput = document.getElementById("impactInput");
-    const guestNameInput = document.getElementById("guestNameInput");
-    const analyzeBtn = document.getElementById("analyzeBtn");
-    const clearBtn = document.getElementById("clearBtn");
-    const loading = document.getElementById("loading");
-    const resultSection = document.getElementById("resultSection");
-    const clearHistoryBtn = document.getElementById("clearHistoryBtn");
-
     renderDashboard();
 
-    analyzeBtn.addEventListener("click", () => {
-        const text = complaintInput.value.trim();
-        if (!text) {
-            alert("Harap masukkan detail komplain terlebih dahulu!");
+    document.getElementById("analyzeBtn").addEventListener("click", () => {
+        const text = document.getElementById("complaintInput").value.trim();
+        const room = document.getElementById("roomInput").value.trim();
+        const impact = document.getElementById("impactInput").value;
+        const guestName = document.getElementById("guestNameInput").value.trim();
+
+        if (!text || !room) {
+            alert("Harap isi Nomor Kamar dan Detail Komplain!");
             return;
         }
 
-        loading.classList.remove("hidden");
-        loading.classList.add("flex");
-        resultSection.classList.add("hidden");
+        document.getElementById("loading").classList.remove("hidden");
+        document.getElementById("loading").classList.add("flex");
+        document.getElementById("resultSection").classList.add("hidden");
 
         setTimeout(() => {
-            loading.classList.add("hidden");
-            loading.classList.remove("flex");
+            document.getElementById("loading").classList.add("hidden");
+            document.getElementById("loading").classList.remove("flex");
 
-            const room = roomInput.value.trim() || "N/A";
-            const impact = impactInput.value;
-            const guestName = guestNameInput.value.trim();
-
-            const aiResult = processComplaintAI(text, room, impact);
-
-            const record = {
+            const aiResult = analyzeComplaintAI(text, room, impact, guestName);
+            currentPendingResult = {
                 id: Date.now(),
                 date: new Date().toLocaleDateString("id-ID"),
                 rawDate: new Date().toISOString().split("T")[0],
                 room,
-                guestName,
+                guestName: guestName || "Guest",
                 text,
-                departments: aiResult.departments,
-                severityLevel: aiResult.severityLevel,
-                severityBadgeClass: aiResult.severityBadgeClass,
-                reviewRisk: aiResult.reviewRisk,
-                recoveryPlan: aiResult.recoveryPlan
+                impact,
+                ...aiResult
             };
 
-            StorageManager.saveComplaint(record);
-            displayAIResult(aiResult);
-            renderDashboard();
-        }, 1500);
+            displayAIResult(currentPendingResult);
+        }, 1200);
     });
 
-    clearBtn.addEventListener("click", () => {
-        complaintInput.value = "";
-        roomInput.value = "";
-        guestNameInput.value = "";
-    });
-
-    clearHistoryBtn.addEventListener("click", () => {
-        if (confirm("Yakin ingin menghapus seluruh log insiden?")) {
-            StorageManager.clearAll();
+    document.getElementById("saveCaseBtn").addEventListener("click", () => {
+        if (currentPendingResult) {
+            StorageManager.saveComplaint(currentPendingResult);
+            currentPendingResult = null;
+            document.getElementById("resultSection").classList.add("hidden");
+            document.getElementById("complaintInput").value = "";
+            document.getElementById("roomInput").value = "";
+            document.getElementById("guestNameInput").value = "";
             renderDashboard();
+            alert("Case tersimpan & Dashboard terbarui!");
         }
+    });
+
+    document.getElementById("clearBtn").addEventListener("click", () => {
+        document.getElementById("complaintInput").value = "";
+        document.getElementById("roomInput").value = "";
+        document.getElementById("guestNameInput").value = "";
     });
 });
 
-function displayAIResult(result) {
-    document.getElementById("resSeverity").innerText = result.severityLevel;
-    document.getElementById("resSeverityBadge").innerText = `Severity: ${result.severityLevel}`;
-    document.getElementById("resSeverityBadge").className = `text-xs px-3 py-1 rounded-full font-bold ${result.severityBadgeClass}`;
-    document.getElementById("resRisk").innerText = result.reviewRisk;
-    document.getElementById("resRecovery").innerText = result.recoveryPlan;
+function displayAIResult(res) {
+    document.getElementById("resDept").innerText = res.dept;
+    document.getElementById("resCategory").innerText = res.category;
+    document.getElementById("resSubCategory").innerText = res.subCategory;
+    document.getElementById("resSentiment").innerText = res.sentiment;
 
-    const deptsContainer = document.getElementById("resDepts");
-    deptsContainer.innerHTML = result.departments.map(d => `<span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded font-semibold">${d}</span>`).join("");
+    document.getElementById("resSeverityScore").innerText = `${res.severityScore}/100`;
+    document.getElementById("resReviewRiskPct").innerText = `${res.reviewRiskPct}%`;
+    document.getElementById("resPredictedStar").innerText = res.predictedStar;
+    document.getElementById("resRevenueAtRisk").innerText = `IDR ${res.revenueAtRisk.toLocaleString("id-ID")}`;
+
+    document.getElementById("resRootCause").innerText = res.rootCause;
+    document.getElementById("resSummary").innerText = res.summary;
+
+    const checklistContainer = document.getElementById("resRecoveryChecklist");
+    checklistContainer.innerHTML = res.recoveryChecklist.map(item => `<div class="flex items-center gap-1.5 text-slate-700"><span class="text-emerald-600 font-bold">✔</span> ${item}</div>`).join("");
+
+    const badge = document.getElementById("resPriorityBadge");
+    badge.innerText = `Priority: ${res.priority}`;
+    badge.className = `text-xs px-3 py-1 rounded-full font-bold ${res.priority === 'Critical' || res.priority === 'High' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'}`;
 
     document.getElementById("resultSection").classList.remove("hidden");
 }
@@ -86,124 +91,143 @@ function displayAIResult(result) {
 function renderDashboard() {
     const data = StorageManager.getComplaints();
 
-    // 1. Update KPI Cards
-    document.getElementById("kpiTotal").innerText = data.length;
-    
-    const criticalCount = data.filter(d => d.severityLevel.includes("HIGH")).length;
-    document.getElementById("kpiCritical").innerText = criticalCount;
+    // 1. KPI Calculation
+    document.getElementById("kpiToday").innerText = data.length;
+    const highPri = data.filter(d => d.priority === "High" || d.priority === "Critical").length;
+    document.getElementById("kpiHighPriority").innerText = highPri;
 
-    const highRiskCount = data.filter(d => d.reviewRisk.includes("🔴")).length;
-    document.getElementById("kpiHighRisk").innerText = highRiskCount;
+    let totalRevenueRisk = data.reduce((acc, curr) => acc + (curr.revenueAtRisk || 0), 0);
+    document.getElementById("kpiRevenueRisk").innerText = `IDR ${totalRevenueRisk.toLocaleString("id-ID")}`;
 
-    // Calculate Top Dept
+    // Most Dept Issue
     let deptCounts = {};
-    data.forEach(item => {
-        item.departments.forEach(dept => {
-            deptCounts[dept] = (deptCounts[dept] || 0) + 1;
-        });
-    });
+    data.forEach(d => { deptCounts[d.dept] = (deptCounts[d.dept] || 0) + 1; });
     let topDept = Object.keys(deptCounts).reduce((a, b) => deptCounts[a] > deptCounts[b] ? a : b, "-");
-    document.getElementById("kpiTopDept").innerText = topDept;
+    document.getElementById("kpiMostDept").innerText = topDept;
 
-    // 2. Render History Table
+    // 2. Room Heat Map Renderer
+    renderRoomHeatMap(data);
+
+    // 3. Render Table
+    renderTable(data);
+
+    // 4. Render Analytics Charts
+    renderAnalyticsCharts(data, deptCounts);
+}
+
+function renderRoomHeatMap(data) {
+    const container = document.getElementById("roomHeatMap");
+    container.innerHTML = "";
+
+    // Group complaints per room
+    let roomIncidents = {};
+    data.forEach(d => {
+        roomIncidents[d.room] = (roomIncidents[d.room] || 0) + 1;
+    });
+
+    ROOM_LIST.forEach(roomNum => {
+        const count = roomIncidents[roomNum] || 0;
+        let colorClass = "bg-emerald-100 border-emerald-300 text-emerald-800"; // Safe (Green)
+        let indicator = "🟢";
+
+        if (count >= 3) {
+            colorClass = "bg-rose-100 border-rose-300 text-rose-800 font-bold"; // Critical (Red)
+            indicator = "🔴";
+        } else if (count >= 1) {
+            colorClass = "bg-amber-100 border-amber-300 text-amber-800 font-semibold"; // Warning (Yellow)
+            indicator = "🟡";
+        }
+
+        const div = document.createElement("div");
+        div.className = `p-2.5 rounded-lg border text-center text-xs flex flex-col items-center justify-center ${colorClass}`;
+        div.innerHTML = `
+            <span>Room ${roomNum} ${indicator}</span>
+            <span class="text-[10px] opacity-75">${count} Insiden</span>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function renderTable(data) {
     const tbody = document.getElementById("historyTable");
     tbody.innerHTML = "";
 
     if (data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Belum ada histori komplain tersimpan.</td></tr>`;
-    } else {
-        data.forEach(item => {
-            const tr = document.createElement("tr");
-            tr.className = "hover:bg-slate-50 border-b";
-            tr.innerHTML = `
-                <td class="p-3 font-semibold whitespace-nowrap">${item.date}<br><span class="text-blue-600">Rm ${item.room}</span></td>
-                <td class="p-3">${item.text} ${item.guestName ? `<br><i class="text-slate-400">(${item.guestName})</i>` : ''}</td>
-                <td class="p-3">${item.departments.map(d => `<span class="bg-slate-100 text-slate-700 text-[10px] px-1.5 py-0.5 rounded border font-semibold mr-0.5">${d}</span>`).join("")}</td>
-                <td class="p-3"><span class="text-[10px] px-2 py-0.5 rounded font-bold ${item.severityBadgeClass}">${item.severityLevel}</span></td>
-                <td class="p-3 text-[11px] font-medium">${item.reviewRisk}</td>
-                <td class="p-3 text-[11px] text-slate-600 whitespace-pre-line">${item.recoveryPlan}</td>
-            `;
-            tbody.appendChild(tr);
-        });
+        tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400">Belum ada komplain tersimpan.</td></tr>`;
+        return;
     }
 
-    // 3. Render Charts (Trend & Heat Map)
-    renderCharts(data, deptCounts);
+    data.forEach(item => {
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-50 border-b";
+        tr.innerHTML = `
+            <td class="p-3 font-semibold">${item.date}<br><span class="text-blue-600">Rm ${item.room}</span></td>
+            <td class="p-3 font-medium">${item.guestName}</td>
+            <td class="p-3"><b>${item.category}</b><br><span class="text-slate-400 text-[10px]">${item.rootCause}</span></td>
+            <td class="p-3"><span class="bg-slate-100 text-slate-700 text-[10px] px-1.5 py-0.5 rounded font-semibold">${item.dept}</span></td>
+            <td class="p-3"><span class="text-[10px] px-2 py-0.5 rounded font-bold ${item.priority === 'Critical' || item.priority === 'High' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'}">${item.priority}</span></td>
+            <td class="p-3 font-semibold text-amber-700">${item.reviewRiskPct}% (${item.predictedStar})</td>
+            <td class="p-3 text-[11px] text-slate-600">${item.recoveryChecklist ? item.recoveryChecklist.join(", ") : '-'}</td>
+        `;
+        tbody.appendChild(tr);
+    });
 }
 
-function renderCharts(data, deptCounts) {
-    // 📈 Trend Chart (By Date)
-    let dateCounts = {};
-    data.slice().reverse().forEach(item => {
-        dateCounts[item.date] = (dateCounts[item.date] || 0) + 1;
+function filterHistoryTable() {
+    const search = document.getElementById("searchInput").value.toLowerCase();
+    const dept = document.getElementById("deptFilter").value;
+    const priority = document.getElementById("priorityFilter").value;
+
+    const data = StorageManager.getComplaints().filter(item => {
+        const matchSearch = item.guestName.toLowerCase().includes(search) || item.room.includes(search) || item.text.toLowerCase().includes(search);
+        const matchDept = dept === "" || item.dept === dept;
+        const matchPriority = priority === "" || item.priority === priority;
+        return matchSearch && matchDept && matchPriority;
     });
 
-    const trendCtx = document.getElementById("trendChart").getContext("2d");
-    if (trendChartInstance) trendChartInstance.destroy();
-    trendChartInstance = new Chart(trendCtx, {
-        type: 'line',
+    renderTable(data);
+}
+
+function renderAnalyticsCharts(data, deptCounts) {
+    // Dept Chart
+    const deptCtx = document.getElementById("deptChart").getContext("2d");
+    if (deptChartInstance) deptChartInstance.destroy();
+    deptChartInstance = new Chart(deptCtx, {
+        type: 'bar',
         data: {
-            labels: Object.keys(dateCounts),
-            datasets: [{
-                label: 'Jumlah Insiden',
-                data: Object.values(dateCounts),
-                borderColor: '#2563eb',
-                backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                fill: true,
-                tension: 0.3
-            }]
+            labels: Object.keys(deptCounts),
+            datasets: [{ label: 'Insiden per Dept', data: Object.values(deptCounts), backgroundColor: '#3b82f6' }]
         },
         options: { responsive: true, maintainAspectRatio: false }
     });
 
-    // 📊 Heat Map Chart (By Department)
-    const heatCtx = document.getElementById("heatMapChart").getContext("2d");
-    if (heatMapChartInstance) heatMapChartInstance.destroy();
-    heatMapChartInstance = new Chart(heatCtx, {
-        type: 'bar',
+    // Priority Chart
+    let priCounts = { Critical: 0, High: 0, Medium: 0, Low: 0 };
+    data.forEach(d => { if (priCounts[d.priority] !== undefined) priCounts[d.priority]++; });
+
+    const priCtx = document.getElementById("priorityChart").getContext("2d");
+    if (priorityChartInstance) priorityChartInstance.destroy();
+    priorityChartInstance = new Chart(priCtx, {
+        type: 'doughnut',
         data: {
-            labels: Object.keys(deptCounts),
-            datasets: [{
-                label: 'Insiden per Departemen',
-                data: Object.values(deptCounts),
-                backgroundColor: ['#e11d48', '#3b82f6', '#10b981', '#8b5cf6']
-            }]
+            labels: Object.keys(priCounts),
+            datasets: [{ data: Object.values(priCounts), backgroundColor: ['#e11d48', '#f97316', '#f59e0b', '#10b981'] }]
         },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        options: { responsive: true, maintainAspectRatio: false }
     });
 }
 
-// EXPORT TO EXCEL
+// PDF & Excel Export
 function exportExcel() {
     const data = StorageManager.getComplaints();
-    if (data.length === 0) return alert("Tidak ada data untuk di-export!");
-
-    const exportData = data.map(item => ({
-        Tanggal: item.date,
-        Kamar: item.room,
-        Tamu: item.guestName || "-",
-        Komplain: item.text,
-        Departemen: item.departments.join(", "),
-        Severity: item.severityLevel,
-        ReviewRisk: item.reviewRisk,
-        RecoveryPlan: item.recoveryPlan
-    }));
-
-    const ws = XLSX.utils.json_to_sheet(exportData);
+    if (!data.length) return alert("Tidak ada data untuk di-export!");
+    const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Complaint Analytics");
-    XLSX.writeFile(wb, `stayZIN_Insight_Report_${new Date().toISOString().split('T')[0]}.xlsx`);
+    XLSX.utils.book_append_sheet(wb, ws, "Executive Complaint Report");
+    XLSX.writeFile(wb, `stayZIN_Insight_v2_Report.xlsx`);
 }
 
-// EXPORT TO PDF
 function exportPDF() {
     const element = document.getElementById("exportableArea");
-    const opt = {
-        margin: 0.3,
-        filename: `stayZIN_Executive_Report_${new Date().toISOString().split('T')[0]}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
-    };
-    html2pdf().set(opt).from(element).save();
+    html2pdf().set({ margin: 0.3, filename: 'stayZIN_Insight_v2_Executive_Report.pdf', html2canvas: { scale: 2 } }).from(element).save();
 }
