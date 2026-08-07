@@ -3,255 +3,197 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>stayZIN Insight v2.2 - Deep Taxonomy Intelligence</title>
+    <title>stayZIN Insight - Multi-Issue AI Complaint Intelligence</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- SheetJS (XLSX) -->
+    <!-- SheetJS (XLSX Reader) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 p-4 md:p-8">
-    <div id="exportableArea" class="max-w-7xl mx-auto space-y-6">
+    <div class="max-w-7xl mx-auto space-y-6">
         
-        <!-- HEADER & UNIT FILTER -->
+        <!-- HEADER & FILTER -->
         <header class="flex flex-col md:flex-row md:items-center justify-between bg-white p-6 rounded-xl shadow-sm border border-slate-200 gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
                     stayZIN Insight 
-                    <span class="text-xs font-semibold bg-blue-100 text-blue-700 px-2.5 py-0.5 rounded-full">v2.2 Taxonomy Engine</span>
+                    <span class="text-xs font-semibold bg-indigo-100 text-indigo-700 px-2.5 py-0.5 rounded-full">Multi-Issue Detection Engine</span>
                 </h1>
-                <p class="text-xs text-slate-500">Comprehensive Hospitality Complaint Intelligence (10 Department Classifications)</p>
+                <p class="text-xs text-slate-500">AI Complaint Intelligence & Taxonomy Classifier</p>
             </div>
             
             <div class="flex items-center gap-3">
-                <label class="text-xs font-bold text-slate-700">Filter Location Unit:</label>
-                <select id="unitSelectFilter" onchange="renderDashboard()" class="p-2 border rounded-lg text-xs font-semibold bg-slate-50 border-blue-500 text-blue-900 focus:ring-2 focus:ring-blue-500">
+                <select id="unitSelectFilter" onchange="renderDashboard()" class="p-2 border rounded-lg text-xs font-semibold bg-slate-50 border-indigo-500 text-indigo-900">
                     <option value="ALL">🌐 Semua Unit (Canggu & Berawa)</option>
                     <option value="Canggu">🌴 Unit Canggu</option>
                     <option value="Berawa">🌊 Unit Berawa</option>
                 </select>
+                <button onclick="clearAllData()" class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-600 px-3 py-1.5 rounded-lg border border-rose-200 font-bold transition">
+                    ⚠️ Reset Cache Data
+                </button>
             </div>
         </header>
 
-        <!-- 🏠 MANAGEMENT KPI DASHBOARD -->
-        <section class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-1">
-                <p class="text-[11px] font-semibold text-slate-500 uppercase">Total Complaints</p>
-                <p id="kpiToday" class="text-2xl font-black text-slate-800">0</p>
+        <!-- 🚨 COMPLAINT QUICK SUMMARY -->
+        <section class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <p class="text-[11px] font-semibold text-slate-500 uppercase">Total Review / Log</p>
+                <p id="kpiTotalComplaints" class="text-2xl font-black text-slate-800">0</p>
             </div>
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-1">
-                <p class="text-[11px] font-semibold text-slate-500 uppercase">🔴 Critical / High</p>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <p class="text-[11px] font-semibold text-slate-500 uppercase">High Priority Issues</p>
                 <p id="kpiHighPriority" class="text-2xl font-black text-rose-600">0</p>
             </div>
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-1">
-                <p class="text-[11px] font-semibold text-slate-500 uppercase">Top Source</p>
-                <p id="kpiTopSource" class="text-base font-bold text-blue-600 truncate">-</p>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <p class="text-[11px] font-semibold text-slate-500 uppercase">Top Dept Affected</p>
+                <p id="kpiMostDept" class="text-sm font-bold text-slate-800 truncate">-</p>
             </div>
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-1">
-                <p class="text-[11px] font-semibold text-slate-500 uppercase">Top Category Issue</p>
-                <p id="kpiTopCategory" class="text-base font-bold text-amber-600 truncate">-</p>
-            </div>
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-1">
-                <p class="text-[11px] font-semibold text-slate-500 uppercase">Most Dept Issue</p>
-                <p id="kpiMostDept" class="text-base font-bold text-slate-800 truncate">-</p>
-            </div>
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-1 bg-rose-50 border-rose-200">
-                <p class="text-[11px] font-semibold text-rose-700 uppercase">Revenue at Risk</p>
-                <p id="kpiRevenueRisk" class="text-base font-black text-rose-700">IDR 0</p>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm bg-rose-50 border-rose-200">
+                <p class="text-[11px] font-semibold text-rose-700 uppercase">Total Revenue at Risk</p>
+                <p id="kpiRevenueRisk" class="text-base font-black text-rose-700">Rp 0</p>
             </div>
         </section>
 
-        <!-- 📂 UPLOAD EXCEL SECTION -->
-        <section class="bg-blue-50 border border-blue-200 p-4 rounded-xl space-y-2" data-html2canvas-ignore="true">
+        <!-- 📂 EXCEL UPLOADER -->
+        <section class="bg-indigo-50/60 border border-indigo-200 p-5 rounded-xl space-y-3">
             <div class="flex justify-between items-center flex-wrap gap-2">
-                <h3 class="text-sm font-bold text-blue-900 flex items-center gap-2">
-                    📂 Import Log Komplain Excel / CSV (Auto-Taxonomy AI)
-                </h3>
-                <span class="text-xs text-blue-700 font-medium">Kolom: Guest Name | Room No | Check-In | Check-Out | Source | Remarks | Unit</span>
+                <div>
+                    <h3 class="text-sm font-bold text-indigo-900">📂 Import Log Ulasan / Komplain Tamu (.XLSX / .CSV)</h3>
+                    <p class="text-xs text-indigo-700">Sistem AI akan otomatis membaca seluruh isu yang ada pada ulasan tamu (1 ulasan bisa >1 isu).</p>
+                </div>
             </div>
-            <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer"/>
+            <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 cursor-pointer"/>
         </section>
 
-        <!-- 🔥 ROOM HEAT MAP & ANALYTICS -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
-                <h3 class="text-sm font-bold text-slate-800 flex items-center justify-between">
-                    <span>🔥 Room Complaint Frequency</span>
-                    <span id="unitMapBadge" class="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded">All Units</span>
-                </h3>
-                <div id="roomHeatMap" class="grid grid-cols-4 gap-2 pt-2"></div>
-            </div>
-
-            <div class="lg:col-span-2 bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
-                <h3 class="text-sm font-bold text-slate-800">📊 Department & Category Breakdown</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 h-60">
-                    <div><canvas id="deptChart"></canvas></div>
-                    <div><canvas id="categoryChart"></canvas></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 📚 COMPLAINT HISTORY TABLE (FULL TAXONOMY) -->
+        <!-- 📚 MULTI-ISSUE COMPLAINT TABLE -->
         <section class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3" data-html2canvas-ignore="true">
-                <div class="flex items-center gap-2">
-                    <h3 class="text-base font-bold text-slate-800">📚 Detailed Complaint Log & AI Classification</h3>
-                    <button onclick="clearAllData()" class="text-[10px] bg-rose-50 hover:bg-rose-100 text-rose-600 px-2 py-1 rounded border border-rose-200 font-semibold">Reset Data</button>
-                </div>
-                
-                <div class="flex flex-wrap items-center gap-2">
-                    <input type="text" id="searchInput" placeholder="Cari Tamu/Kamar/Remarks..." onkeyup="filterHistoryTable()" class="p-2 border rounded-lg text-xs bg-slate-50">
-                    <select id="deptFilter" onchange="filterHistoryTable()" class="p-2 border rounded-lg text-xs bg-slate-50">
-                        <option value="">Semua Dept AI</option>
-                        <option value="Housekeeping">Housekeeping</option>
-                        <option value="Engineering">Engineering</option>
-                        <option value="stayZIN">stayZIN (FO)</option>
-                        <option value="Food & Beverage">Food & Beverage</option>
-                        <option value="Reservation">Reservation</option>
-                        <option value="Noise & Disturbance">Noise & Disturbance</option>
-                        <option value="Security & Safety">Security & Safety</option>
-                        <option value="Technology & System">Technology & System</option>
-                        <option value="External Factors">External Factors</option>
-                        <option value="Outlet Service">Outlet Service</option>
-                    </select>
-                </div>
-            </div>
-
+            <h3 class="text-base font-bold text-slate-800">📚 Log Hasil Klasifikasi AI</h3>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-xs">
                     <thead>
                         <tr class="bg-slate-100 text-slate-700 border-b">
                             <th class="p-2.5">Guest & Room</th>
                             <th class="p-2.5">Source</th>
-                            <th class="p-2.5">Remarks (Original)</th>
+                            <th class="p-2.5 w-1/3">Original Guest Review / Feedback</th>
                             <th class="p-2.5">Unit</th>
-                            <th class="p-2.5 border-l bg-slate-200 text-slate-900 font-bold">AI Dept</th>
-                            <th class="p-2.5 bg-slate-200 text-slate-900 font-bold">AI Category / Issue</th>
-                            <th class="p-2.5 bg-slate-200 text-slate-900 font-bold">Action / Risk</th>
+                            <th class="p-2.5 bg-indigo-50 font-bold text-indigo-900">AI Dept Detected</th>
+                            <th class="p-2.5 bg-indigo-50 font-bold text-indigo-900">AI Categories Detected</th>
+                            <th class="p-2.5">Priority</th>
                         </tr>
                     </thead>
-                    <tbody id="historyTable" class="divide-y divide-slate-200"></tbody>
+                    <tbody id="dataTableBody" class="divide-y divide-slate-200">
+                        <tr>
+                            <td colspan="7" class="p-8 text-center text-slate-400 font-medium">
+                                Belum ada data. Silakan upload file Excel log review Anda!
+                            </td>
+                        </tr>
+                    </tbody>
                 </table>
             </div>
         </section>
 
     </div>
 
-    <!-- SCRIPT ENGINE TAXONOMY -->
     <script>
-        const STORAGE_KEY = 'stayzin_complaints_v2_2';
+        const STORAGE_KEY = 'stayzin_multi_issue_v1';
+        
         const StorageManager = {
-            getComplaints: () => JSON.parse(localStorage.getItem(STORAGE_KEY)) || [],
-            saveAll: (dataArray) => localStorage.setItem(STORAGE_KEY, JSON.stringify(dataArray)),
-            clearAll: () => localStorage.removeItem(STORAGE_KEY)
+            getData: () => JSON.parse(localStorage.getItem(STORAGE_KEY)) || [],
+            saveData: (data) => localStorage.setItem(STORAGE_KEY, JSON.stringify(data)),
+            clear: () => localStorage.removeItem(STORAGE_KEY)
         };
 
-        // ADVANCED AI TAXONOMY CLASSIFIER (10 DEPARTMENTS)
+        // 🧠 ALGORITMA MULTI-ISSUE DETECTION AI
         function analyzeComplaintAI(text) {
             const lower = (text || '').toLowerCase();
             
-            let dept = "stayZIN";
-            let category = "Service Issue";
-            let priority = "Medium";
-            let revenueRisk = 500000;
+            let depts = new Set();
+            let categories = new Set();
+            let priority = "Low";
+            let revenueRisk = 0;
 
-            // 1. HOUSEKEEPING
-            if (lower.includes("clean") || lower.includes("smell") || lower.includes("musty") || lower.includes("odor") || lower.includes("linen") || lower.includes("laundry") || lower.includes("pest") || lower.includes("flies") || lower.includes("animal") || lower.includes("bedding") || lower.includes("towel") || lower.includes("amenities") || lower.includes("dust")) {
-                dept = "Housekeeping";
-                if (lower.includes("smell") || lower.includes("musty") || lower.includes("odor") || lower.includes("bau")) category = "Odor / smell";
-                else if (lower.includes("linen") || lower.includes("laundry") || lower.includes("sprei")) category = "Linen / laundry";
-                else if (lower.includes("pest") || lower.includes("flies") || lower.includes("animal") || lower.includes("serangga")) category = "Pest control / Animal";
-                else if (lower.includes("bedding") || lower.includes("pillow") || lower.includes("comfort")) category = "Bedding / Room Comfort";
-                else if (lower.includes("amenities") || lower.includes("setup")) category = "Room Setup / incomplete amenities";
-                else category = "Cleanliness (room)";
-                revenueRisk = 450000;
+            // 1. Housekeeping / Kebersihan / Bau / Serangga
+            if (lower.includes("clean") || lower.includes("smell") || lower.includes("musty") || lower.includes("odor") || lower.includes("linen") || lower.includes("towel") || lower.includes("pest") || lower.includes("insect") || lower.includes("flies")) {
+                depts.add("Housekeeping");
+                
+                if (lower.includes("smell") || lower.includes("musty") || lower.includes("odor")) {
+                    categories.add("Odor / smell");
+                }
+                if (lower.includes("pest") || lower.includes("insect") || lower.includes("flies")) {
+                    categories.add("Pest control");
+                }
+                if (lower.includes("linen") || lower.includes("towel") || lower.includes("bed")) {
+                    categories.add("Linen / Laundry");
+                }
+                if (lower.includes("dirty") || lower.includes("clean")) {
+                    categories.add("Cleanliness");
+                }
+                revenueRisk += 350000;
             }
-            // 2. ENGINEERING
-            else if (lower.includes("ac") || lower.includes("temperature") || lower.includes("water") || lower.includes("shower") || lower.includes("hot water") || lower.includes("leak") || lower.includes("light") || lower.includes("door") || lower.includes("blind") || lower.includes("flooding") || lower.includes("mold") || lower.includes("humidity")) {
-                dept = "Engineering";
-                if (lower.includes("ac") || lower.includes("temperature") || lower.includes("cold")) category = "AC / temperature";
-                else if (lower.includes("water pressure") || lower.includes("hot water") || lower.includes("shower")) category = "Water pressure / hot water";
-                else if (lower.includes("leak") || lower.includes("bocor")) category = "Leakage Issue";
-                else if (lower.includes("mold") || lower.includes("humidity") || lower.includes("moisture")) category = "Moisture / Humidity / Moldy";
-                else if (lower.includes("door") || lower.includes("blind") || lower.includes("lock")) category = "Equipment malfunction";
-                else category = "No Water / Plumbing Issue";
+
+            // 2. Engineering / AC / Ventilasi / Kerusakan
+            if (lower.includes("ac") || lower.includes("air conditioning") || lower.includes("ventilation") || lower.includes("leak") || lower.includes("water") || lower.includes("shower") || lower.includes("broken")) {
+                depts.add("Engineering");
+                
+                if (lower.includes("ac") || lower.includes("air conditioning")) {
+                    categories.add("AC / Temperature");
+                }
+                if (lower.includes("ventilation")) {
+                    categories.add("Ventilation Issue");
+                }
+                if (lower.includes("leak") || lower.includes("water") || lower.includes("shower")) {
+                    categories.add("Plumbing / Water Leakage");
+                }
+                priority = "Medium";
+                revenueRisk += 500000;
+            }
+
+            // 3. Noise / Kebisingan
+            if (lower.includes("noise") || lower.includes("noisy") || lower.includes("loud") || lower.includes("bising")) {
+                depts.add("Noise & Disturbance");
+                categories.add("Noise Disturbance");
                 priority = "High";
-                revenueRisk = 900000;
-            }
-            // 3. NOISE & DISTURBANCE
-            else if (lower.includes("noise") || lower.includes("bising") || lower.includes("beach club") || lower.includes("construction") || lower.includes("music") || lower.includes("party") || lower.includes("event")) {
-                dept = "Noise & Disturbance";
-                if (lower.includes("beach club") || lower.includes("construction") || lower.includes("outside")) category = "External noise (construction / event)";
-                else category = "Internal noise (guest / staff / project)";
-                revenueRisk = 800000;
-            }
-            // 4. TECHNOLOGY & SYSTEM
-            else if (lower.includes("wifi") || lower.includes("internet") || lower.includes("tv") || lower.includes("signal") || lower.includes("pms") || lower.includes("payment")) {
-                dept = "Technology & System";
-                if (lower.includes("wifi") || lower.includes("internet")) category = "WiFi / internet";
-                else if (lower.includes("tv")) category = "TV / entertainment";
-                else category = "Payment gateway issue";
-                revenueRisk = 350000;
-            }
-            // 5. FOOD & BEVERAGE
-            else if (lower.includes("food") || lower.includes("taste") || lower.includes("breakfast") || lower.includes("restaurant") || lower.includes("order") || lower.includes("hygiene")) {
-                dept = "Food & Beverage";
-                if (lower.includes("breakfast")) category = "Breakfast issue / inclusion discrepancy";
-                else if (lower.includes("hygiene")) category = "Hygiene";
-                else category = "Food quality / taste";
-                revenueRisk = 500000;
-            }
-            // 6. RESERVATION
-            else if (lower.includes("booking") || lower.includes("ota") || lower.includes("deposit") || lower.includes("refund") || lower.includes("cancellation") || lower.includes("price") || lower.includes("expensive")) {
-                dept = "Reservation";
-                if (lower.includes("deposit") || lower.includes("refund")) category = "Deposit / refund";
-                else if (lower.includes("price") || lower.includes("value")) category = "Value for Money / Pricing Perception";
-                else category = "Booking discrepancy (OTA / system)";
-                revenueRisk = 600000;
-            }
-            // 7. SECURITY & SAFETY
-            else if (lower.includes("lost") || lower.includes("theft") || lower.includes("missing") || lower.includes("safe") || lower.includes("stolen")) {
-                dept = "Security & Safety";
-                category = lower.includes("lost") ? "Lost & found" : "Missing items / theft";
-                priority = "Critical";
-                revenueRisk = 1500000;
-            }
-            // 8. EXTERNAL FACTORS
-            else if (lower.includes("traffic") || lower.includes("weather") || lower.includes("rain") || lower.includes("ceremony") || lower.includes("access") || lower.includes("busy")) {
-                dept = "External Factors";
-                if (lower.includes("traffic")) category = "Traffic / access";
-                else if (lower.includes("weather") || lower.includes("rain")) category = "Weather";
-                else category = "Local events / ceremonies";
-                revenueRisk = 300000;
-            }
-            // 9. OUTLET SERVICE
-            else if (lower.includes("gym") || lower.includes("wellness") || lower.includes("spa") || lower.includes("shop") || lower.includes("zinfit")) {
-                dept = "Outlet Service";
-                if (lower.includes("gym") || lower.includes("zinfit")) category = "Gym / ZINFit";
-                else if (lower.includes("spa") || lower.includes("wellness")) category = "Wellness";
-                else category = "The Shop";
-                revenueRisk = 400000;
-            }
-            // 10. stayZIN (FRONT OFFICE & GENERAL SERVICE)
-            else {
-                dept = "stayZIN";
-                if (lower.includes("check-in") || lower.includes("checkin") || lower.includes("checkout")) category = "Check-in / Check-out";
-                else if (lower.includes("transport") || lower.includes("taxi")) category = "Transport Service";
-                else if (lower.includes("bill") || lower.includes("charge")) category = "Billing";
-                else category = "Service Issue";
+                revenueRisk += 750000;
             }
 
-            return { dept, category, priority, revenueRisk };
+            // 4. Front Office / Service
+            if (lower.includes("staff") || lower.includes("service") || lower.includes("reception") || lower.includes("check in") || lower.includes("rude")) {
+                depts.add("Front Office");
+                categories.add("Service Quality / Staff");
+                revenueRisk += 300000;
+            }
+
+            // 5. Food & Beverage
+            if (lower.includes("food") || lower.includes("breakfast") || lower.includes("restaurant") || lower.includes("taste")) {
+                depts.add("F&B / Kitchen");
+                categories.add("Food Quality");
+                revenueRisk += 250000;
+            }
+
+            // Jika terdeteksi lebih dari 2 masalah sekaligus dalam 1 ulasan, tingkatkan Priority ke High
+            if (categories.size >= 2) {
+                priority = "High";
+            }
+
+            // Default jika review tidak mengandung masalah
+            if (depts.size === 0) {
+                depts.add("General");
+                categories.add("General Feedback");
+                revenueRisk = 0;
+            }
+
+            return { 
+                dept: Array.from(depts).join(", "), 
+                category: Array.from(categories).join(", "), 
+                priority: priority, 
+                revenueRisk: revenueRisk 
+            };
         }
-
-        let deptChartInstance = null;
-        let categoryChartInstance = null;
 
         document.addEventListener("DOMContentLoaded", () => {
             renderDashboard();
 
-            // EXCEL FILE READER
+            // HANDLER IMPORT EXCEL
             document.getElementById('excelFileInput').addEventListener('change', function(e) {
                 const file = e.target.files[0];
                 if (!file) return;
@@ -260,39 +202,37 @@
                 reader.onload = function(evt) {
                     const data = new Uint8Array(evt.target.result);
                     const workbook = XLSX.read(data, { type: 'array' });
-                    const firstSheetName = workbook.SheetNames[0];
-                    const rawJson = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheetName]);
+                    const rawJson = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
 
-                    const existingData = StorageManager.getComplaints();
+                    const processList = [];
 
                     rawJson.forEach(row => {
-                        const guestName = row['Guest Name'] || row['Guest'] || row['Nama Tamu'] || '-';
+                        const guestName = row['Guest Name'] || row['Guest'] || row['Nama Tamu'] || 'Anonymous';
                         const room = row['Room No'] || row['Room'] || row['Kamar'] || '-';
-                        const checkIn = row['Check-In'] || row['Checkin'] || '-';
-                        const checkOut = row['Check-Out'] || row['Checkout'] || '-';
-                        const source = row['Source'] || row['Sumber'] || 'Direct';
-                        const remarks = row['Remarks'] || row['Complaint'] || row['Komplain'] || '';
+                        const source = row['Source'] || row['Sumber'] || 'Google';
+                        const remarks = row['Remarks'] || row['Complaint'] || row['Review'] || row['Komplain'] || '';
                         const unit = row['Unit'] || 'Canggu';
 
-                        if (remarks) {
-                            const ai = analyzeComplaintAI(remarks);
-                            existingData.unshift({
-                                id: Date.now() + Math.random(),
-                                guestName: guestName.toString(),
-                                room: room.toString(),
-                                checkIn: checkIn.toString(),
-                                checkOut: checkOut.toString(),
-                                source: source.toString(),
-                                remarks: remarks.toString(),
-                                unit: unit.toString(),
-                                ...ai
-                            });
-                        }
+                        // Analisis AI Multi-Issue
+                        const aiResult = analyzeComplaintAI(remarks);
+
+                        processList.push({
+                            id: Date.now() + Math.random(),
+                            guestName: guestName.toString(),
+                            room: room.toString(),
+                            source: source.toString(),
+                            remarks: remarks.toString(),
+                            unit: unit.toString(),
+                            dept: aiResult.dept,
+                            category: aiResult.category,
+                            priority: aiResult.priority,
+                            revenueRisk: aiResult.revenueRisk
+                        });
                     });
 
-                    StorageManager.saveAll(existingData);
+                    StorageManager.saveData(processList);
                     renderDashboard();
-                    alert("Berhasil mengimpor & memetakan klasifikasi taksonomi Excel!");
+                    alert(`Berhasil menganalisis ${processList.length} data ulasan!`);
                     document.getElementById('excelFileInput').value = '';
                 };
                 reader.readAsArrayBuffer(file);
@@ -300,134 +240,91 @@
         });
 
         function renderDashboard() {
-            const allData = StorageManager.getComplaints();
+            const data = StorageManager.getData();
             const selectedUnit = document.getElementById("unitSelectFilter").value;
 
-            const filteredData = selectedUnit === "ALL" 
-                ? allData 
-                : allData.filter(d => (d.unit || '').toLowerCase().includes(selectedUnit.toLowerCase()));
+            const filtered = selectedUnit === "ALL" 
+                ? data 
+                : data.filter(d => (d.unit || '').toLowerCase().includes(selectedUnit.toLowerCase()));
 
-            document.getElementById("unitMapBadge").innerText = selectedUnit === "ALL" ? "All Units" : `Unit: ${selectedUnit}`;
-            document.getElementById("kpiToday").innerText = filteredData.length;
+            // KALKULASI METRIK
+            let totalComplaints = filtered.length;
+            let highPriorityCount = 0;
+            let totalRevenueRisk = 0;
+            let deptCounts = {};
 
-            const highPri = filteredData.filter(d => d.priority === "High" || d.priority === "Critical").length;
-            document.getElementById("kpiHighPriority").innerText = highPri;
+            filtered.forEach(item => {
+                if (item.priority === "High") highPriorityCount++;
+                totalRevenueRisk += item.revenueRisk;
 
-            let totalRevenueRisk = filteredData.reduce((acc, curr) => acc + (curr.revenueRisk || 0), 0);
-            document.getElementById("kpiRevenueRisk").innerText = `IDR ${totalRevenueRisk.toLocaleString("id-ID")}`;
-
-            let sourceCounts = {}, deptCounts = {}, categoryCounts = {};
-            filteredData.forEach(d => {
-                sourceCounts[d.source] = (sourceCounts[d.source] || 0) + 1;
-                deptCounts[d.dept] = (deptCounts[d.dept] || 0) + 1;
-                categoryCounts[d.category] = (categoryCounts[d.category] || 0) + 1;
+                // Hitung Dept terbanyak
+                if (item.dept) {
+                    const deptsArr = item.dept.split(", ");
+                    deptsArr.forEach(d => {
+                        deptCounts[d] = (deptCounts[d] || 0) + 1;
+                    });
+                }
             });
 
-            let topSource = Object.keys(sourceCounts).reduce((a, b) => sourceCounts[a] > sourceCounts[b] ? a : b, "-");
-            let topDept = Object.keys(deptCounts).reduce((a, b) => deptCounts[a] > deptCounts[b] ? a : b, "-");
-            let topCat = Object.keys(categoryCounts).reduce((a, b) => categoryCounts[a] > categoryCounts[b] ? a : b, "-");
-
-            document.getElementById("kpiTopSource").innerText = topSource;
-            document.getElementById("kpiMostDept").innerText = topDept;
-            document.getElementById("kpiTopCategory").innerText = topCat;
-
-            renderRoomHeatMap(filteredData);
-            renderTable(filteredData);
-            renderAnalyticsCharts(deptCounts, categoryCounts);
-        }
-
-        function renderRoomHeatMap(data) {
-            const container = document.getElementById("roomHeatMap");
-            container.innerHTML = "";
-
-            let roomIncidents = {};
-            data.forEach(d => { if(d.room !== '-') roomIncidents[d.room] = (roomIncidents[d.room] || 0) + 1; });
-
-            const rooms = Object.keys(roomIncidents);
-            if (rooms.length === 0) {
-                container.innerHTML = `<p class="col-span-4 text-xs text-slate-400 text-center py-4">Belum ada data kamar</p>`;
-                return;
+            // Cari dept yang paling sering muncul
+            let mostDept = "-";
+            let maxCount = 0;
+            for (const [dept, count] of Object.entries(deptCounts)) {
+                if (count > maxCount && dept !== "General") {
+                    maxCount = count;
+                    mostDept = dept;
+                }
             }
 
-            rooms.forEach(roomNum => {
-                const count = roomIncidents[roomNum];
-                let colorClass = "bg-amber-50 border-amber-300 text-amber-800";
-                if (count >= 3) colorClass = "bg-rose-100 border-rose-400 text-rose-900 font-bold";
+            // UPDATE UI KPI CARDS
+            document.getElementById("kpiTotalComplaints").innerText = totalComplaints;
+            document.getElementById("kpiHighPriority").innerText = highPriorityCount;
+            document.getElementById("kpiMostDept").innerText = mostDept;
+            document.getElementById("kpiRevenueRisk").innerText = `Rp ${totalRevenueRisk.toLocaleString("id-ID")}`;
 
-                const div = document.createElement("div");
-                div.className = `p-2 rounded-lg border text-center text-xs ${colorClass}`;
-                div.innerHTML = `<div>Rm ${roomNum}</div><div class="text-[10px] opacity-75">${count} Log</div>`;
-                container.appendChild(div);
-            });
+            // RENDER TABEL LOG
+            renderTable(filtered);
         }
 
         function renderTable(data) {
-            const tbody = document.getElementById("historyTable");
+            const tbody = document.getElementById("dataTableBody");
             tbody.innerHTML = "";
 
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400">Belum ada data log komplain. Unggah file Excel Anda!</td></tr>`;
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="p-8 text-center text-slate-400 font-medium">
+                            Belum ada data. Silakan upload file Excel log review Anda!
+                        </td>
+                    </tr>`;
                 return;
             }
 
             data.forEach(item => {
                 const tr = document.createElement("tr");
                 tr.className = "hover:bg-slate-50 border-b";
+
+                // Badge warna priority
+                let priorityBadge = '<span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-bold">Low</span>';
+                if (item.priority === 'Medium') priorityBadge = '<span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-bold">Medium</span>';
+                if (item.priority === 'High') priorityBadge = '<span class="bg-rose-100 text-rose-700 px-2 py-0.5 rounded font-bold">High</span>';
+
                 tr.innerHTML = `
-                    <td class="p-2.5 font-semibold text-slate-800">${item.guestName}<br><span class="text-blue-600 font-bold">Rm ${item.room}</span></td>
-                    <td class="p-2.5"><span class="text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200 font-medium">${item.source}</span></td>
-                    <td class="p-2.5 font-medium text-slate-800">${item.remarks}</td>
+                    <td class="p-2.5 font-semibold text-slate-800">${item.guestName}<br><span class="text-indigo-600 font-bold">Rm ${item.room}</span></td>
+                    <td class="p-2.5"><span class="text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded font-medium">${item.source}</span></td>
+                    <td class="p-2.5 text-slate-700 text-[11px] leading-relaxed">${item.remarks || '-'}</td>
                     <td class="p-2.5 font-semibold text-emerald-700">${item.unit}</td>
-                    <td class="p-2.5 border-l bg-slate-50 font-bold text-slate-800">${item.dept}</td>
-                    <td class="p-2.5 bg-slate-50 text-blue-900 font-medium">${item.category}</td>
-                    <td class="p-2.5 bg-slate-50"><span class="text-[10px] px-2 py-0.5 rounded font-bold ${item.priority === 'Critical' || item.priority === 'High' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'}">${item.priority}</span></td>
+                    <td class="p-2.5 bg-indigo-50/50 font-bold text-indigo-900">${item.dept}</td>
+                    <td class="p-2.5 bg-indigo-50/50 font-semibold text-slate-700">${item.category}</td>
+                    <td class="p-2.5">${priorityBadge}</td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        function filterHistoryTable() {
-            const search = document.getElementById("searchInput").value.toLowerCase();
-            const dept = document.getElementById("deptFilter").value;
-            const selectedUnit = document.getElementById("unitSelectFilter").value;
-
-            const data = StorageManager.getComplaints().filter(item => {
-                const matchUnit = selectedUnit === "ALL" || (item.unit || '').toLowerCase().includes(selectedUnit.toLowerCase());
-                const matchSearch = item.guestName.toLowerCase().includes(search) || item.room.includes(search) || item.remarks.toLowerCase().includes(search);
-                const matchDept = dept === "" || item.dept === dept;
-                return matchUnit && matchSearch && matchDept;
-            });
-
-            renderTable(data);
-        }
-
-        function renderAnalyticsCharts(deptCounts, categoryCounts) {
-            const deptCtx = document.getElementById("deptChart").getContext("2d");
-            if (deptChartInstance) deptChartInstance.destroy();
-            deptChartInstance = new Chart(deptCtx, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(deptCounts),
-                    datasets: [{ label: 'Komplain per Dept', data: Object.values(deptCounts), backgroundColor: '#2563eb' }]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
-
-            const catCtx = document.getElementById("categoryChart").getContext("2d");
-            if (categoryChartInstance) categoryChartInstance.destroy();
-            categoryChartInstance = new Chart(catCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(categoryCounts).slice(0, 6),
-                    datasets: [{ data: Object.values(categoryCounts).slice(0, 6), backgroundColor: ['#e11d48', '#d97706', '#0284c7', '#059669', '#7c3aed', '#64748b'] }]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
-        }
-
         function clearAllData() {
-            if (confirm("Apakah Anda yakin ingin menghapus seluruh log data komplain?")) {
-                StorageManager.clearAll();
+            if (confirm("Apakah Anda yakin ingin mengosongkan log ulasan ini?")) {
+                StorageManager.clear();
                 renderDashboard();
             }
         }
